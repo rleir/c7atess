@@ -10,17 +10,18 @@ USE `mydb` ;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mydb`.`ocr` (
   `idocr` INT NOT NULL,
-  `imageFile` VARCHAR(4096) NOT NULL,
+  `imageFile` VARCHAR(200) NOT NULL,
   `avgWordConfidence` INT NULL,
   `numWords` INT NULL,
   `startOcr` DATETIME NULL,
   `timeOcr` INT NULL,
   `ocrEngine` VARCHAR(45) NULL,
   `remarks` VARCHAR(45) NULL,
+  `imageFileSize` INT NULL,
   `langParam` VARCHAR(8) NULL,
   `outputText` TEXT NULL,
-  `imageFileSize` INT NULL,
-  PRIMARY KEY (`idocr`, `imageFile`))
+  `outputHocr` TEXT NULL,
+  PRIMARY KEY (`idocr`, `imageFile`(200)))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8;
 
