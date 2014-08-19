@@ -39,12 +39,6 @@ if( $help || $input eq "." ) {
     exit 0;
 }
 
-my $cfg = Config::IniFiles->new( -file => "/etc/c7aocr/tessdb.ini" );
-my $username = $cfg->val( 'DBconn', 'username' ) ;
-my $password = $cfg->val( 'DBconn', 'password' ) ;
-my $hostname = $cfg->val( 'DBconn', 'hostname' ) ;
-my $dbname   = $cfg->val( 'DBconn', 'dbname' ) ;
-
 open(LOGFILE, ">>/tmp/testtess.log")
     || die "LOG open failed: $!";
 my $oldfh = select(LOGFILE); $| = 1; select($oldfh);
@@ -74,6 +68,8 @@ if ( -e "$output.hcr") {
     exit 0;
 }
 
+my $starttime = strftime "%Y-%m-%d %H:%M:%S", localtime;
+
 # OCR to a hocr file:
 `tesseract $input $output -l $lang quiet hocr`;
 
@@ -91,6 +87,50 @@ open( TXTFILE, "> $outTxt");
 print TXTFILE $ascii;
 close( TXTFILE);
 
+# zzz now gz the hocr zzzzzzzzzzzzzzzzzzzzzz
+
+my $statement = <<ENDSTAT;
+INSERT INTO ocr 
+( 
+  `imageFile`,
+  `avgWordConfidence`,
+  `numWords` ,
+  `startOcr` ,
+  `timeOcr` ,
+  `ocrEngine` ,
+  `remarks` ,
+  `imageFileSize`,
+  `langParam`,
+  `outputText`,
+  `outputHocr`)
+VALUES
+( 
+?, 1, 1, ?, ?, 'Tesseract', '', 1, ?, ?, ?
+)
+ENDSTAT
+#NOW()
+
+my $cfg = Config::IniFiles->new( -file => "/etc/c7aocr/tessdb.ini" );
+my $username = $cfg->val( 'DBconn', 'username' ) ;
+my $password = $cfg->val( 'DBconn', 'password' ) ;
+my $hostname = $cfg->val( 'DBconn', 'hostname' ) ;
+my $dbname   = $cfg->val( 'DBconn', 'dbname' ) ;
+
+my $dbh = DBI->connect( "DBI:mysql:database=mydb;host=$hostname", $username, $password ) || die "Could not connect to database: $DBI::errstr" ;
+
+
+#my $sth = $dbh->prepare($statement);
+#my  $rc = $sth->bind_param($p_num, $bind_value);
+#  $rv = $sth->execute;
+#  @row_ary  = $sth->fetchrow_array;
+#        $sth->finish;
+
+my $rows = $dbh->do($statement,  $input, $starttime, time, $lang, $ascii, $html);
+if( $rows != 1) {
+    print LOGFILE "sub ocr results pre-existing $output.hcr \n";
+}
+
+$dbh->disconnect();
 exit 0;
 
 
