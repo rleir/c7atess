@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 #
 # Given a image file (jpeg, png and tif), and an output directory
-# run OCR on it, generating xml and text and concordance
+# run OCR on it, generating xml, text, stats, and concordance.
 # The directory will be created if it does not already exist.
-#
+# Before doing OCR, brighten the input image as necessary.
 #
 
 use strict;
@@ -41,6 +41,46 @@ sub magicBrighten {
     if ("$x") {
 	print LOGFILE "image write = $x   \n";
     }
+}
+
+# The .hocr contains these tags:
+# <span 
+# class='ocrx_word'
+# id='word_1_331'
+# title='bbox 1451 679 1457 686; x_wconf 76'
+# lang='eng'
+# dir='ltr'>
+#  <em>I</em>
+# </span>
+sub saveStats {
+    my ( $outHcr,  $outStats) = @_;
+    open( STFILE, "> $outStats");
+
+    # get just the x_wconf values from the hocr file:
+    # write to a stats file with a wconf per line
+    my $confsum = 0;
+    my $confcount = 0;
+
+    my $html = HTML::TagParser->new( $outHcr );
+    my @list = $html->getElementsByTagName( "span" );
+    foreach my $elem ( @list ) {
+	my $innertext = $elem->innerText;
+
+	my $titlevalue = $elem->getAttribute( "title" );
+	my $wconf = "none";
+	if ( $titlevalue =~ / x_wconf ([0-9]*)/ ) {
+	    $wconf = $1;
+	    $confsum += $1;
+	    $confcount ++;
+	}
+	print STFILE " $wconf $innertext \n";
+    }
+    # avoid divide by zero
+    if( $confcount == 0) { $confcount ++; }
+    my $avg = $confsum / $confcount;
+
+    print STFILE " $avg average \n";
+    close( STFILE);
 }
 
 ##############################################
@@ -85,7 +125,7 @@ my $oDir = getcwd() . $dir;
 my $interfilename = $oDir . $base;
            
 print LOGFILE "sub op is $interfilename\n";
-print LOGFILE "sub ext is $ext\n";
+#print LOGFILE "sub ext is $ext\n";  blank!
 my $outHcr   = $interfilename . ".hocr";
 my $outTxt   = $interfilename . ".txt";
 my $outStats = $interfilename . ".stas";
@@ -94,69 +134,25 @@ my $outStats = $interfilename . ".stas";
 make_path $oDir;
 
 # skip images that have been OCR'd already
-if ( -e "$outHcr") {
-    print LOGFILE "sub ocr results pre-existing $outHcr \n";
-    exit 0;
+if ( ! -e "$outHcr") {
+    # brighten the input image by nn%
+    magicBrighten ( $input, $interfilename, "150");
+
+    # OCR to a hocr file:
+    `tesseract $interfilename $interfilename -l $lang quiet hocr`;
+
+    # get just the text from the hocr file:
+    my $hocrhtml = parse_htmlfile( $outHcr);
+    my $formatter = HTML::FormatText->new( leftmargin => 0, rightmargin => 500);
+    my $ascii = $formatter->format( $hocrhtml);
+
+    # write the text file
+    open( TXTFILE, "> $outTxt");
+    print TXTFILE $ascii;
+    close( TXTFILE);
 }
-
-# brighten it by nn%
-magicBrighten ( $input, $interfilename, "150");
-
-# OCR to a hocr file:
-`tesseract $interfilename $interfilename -l $lang quiet hocr`;
-
-#`tesseract $input $interfilename -l $lang quiet hocr`;
-
-# the text appears in this tag:
-#    <strong>well</strong>
-
-# get just the text from the hocr file:
-my $hocrhtml = parse_htmlfile( $outHcr);
-my $formatter = HTML::FormatText->new( leftmargin => 0, rightmargin => 500);
-my $ascii = $formatter->format( $hocrhtml);
-
-# write the text file
-open( TXTFILE, "> $outTxt");
-print TXTFILE $ascii;
-close( TXTFILE);
-
-
-# <span 
-# class='ocrx_word'
-# id='word_1_331'
-# title='bbox 1451 679 1457 686; x_wconf 76'
-# lang='eng'
-# dir='ltr'>
-#  <em>I</em>
-# </span>
-
-open( STFILE, "> $outStats");
-
-# get just the x_wconf values from the hocr file:
-# write to a stats file with a wconf per line
-my $confsum = 0;
-my $confcount = 0;
-
-my $html = HTML::TagParser->new( $outHcr );
-my @list = $html->getElementsByTagName( "span" );
-foreach my $elem ( @list ) {
-    my $innertext = $elem->innerText;
-
-    my $titlevalue = $elem->getAttribute( "title" );
-    my $wconf = "none";
-    if ( $titlevalue =~ / x_wconf ([0-9]*)/ ) {
-	$wconf = $1;
-	$confsum += $1;
-	$confcount ++;
-    }
-    print STFILE " $wconf $innertext \n";
-}
-# avoid divide by zero
-if( $confcount == 0) { $confcount ++; }
-my $avg = $confsum / $confcount;
-
-print STFILE " $avg average \n";
-close( STFILE);
+# save the word confidence values
+saveStats( $outHcr,  $outStats);
 
 exit 0;
 
