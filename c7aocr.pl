@@ -63,9 +63,7 @@ if( ! $ocropus) {
     # gen hocr's in parallel 
     # `find $data -type f -name \\*.jpg -o -name \\*.tif | parallel tesseract {} $outdata/{/.} -l $lang quiet hocr` ;
 
-    `find $data -type f -name \\*.jpg -o -name \\*.tif | parallel ./c7atess.pl --input={} --lang=$lang --verbose` ;
-
-#    `find $data -type f -name \\*.jpg -o -name \\*.tif | parallel tesseract {} -l $lang quiet hocr ">" $outdata\\{.}.hocr` ;
+    `find $data -type f -name \\*.jpg -o -name \\*.jp2 -o -name \\*.tif | parallel ./c7atess.pl --input={} --lang=$lang --verbose` ;
 
     # gen pdf's in parallel
 #    `find . -type f -name \\*.ppm | parallel hocr2pdf -i {} -o {.}-new.pdf "<" {.}.hocr` ;
