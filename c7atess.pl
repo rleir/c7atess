@@ -13,11 +13,39 @@ use Getopt::Long;
 use Cwd 'abs_path';
 use HTML::FormatText;
 use HTML::Parse;
+use HTML::TagParser;
 use File::Path qw( make_path );
 use File::Basename;
 use Cwd;
+use Image::Magick ;                # brighten
 
 use constant { TRUE => 1, FALSE => 0 };
+
+# get imageMagick to scale and or rotate the image
+sub magicBrighten {
+    my ($sourceFile, $interfilename, $brightenFactor) =  @_;
+
+    my $image = Image::Magick->new;
+    my $x = $image->read( $sourceFile);
+    if ("$x") {
+	print LOGFILE "image read = $x   \n";
+    }
+    print LOGFILE "sourceFile: $sourceFile    \n";
+
+    $x = $image->Mogrify( 'modulate', brightness=>$brightenFactor );
+    if ("$x") {
+	print LOGFILE "image brighten = $x   \n";
+    }
+
+    $x = $image->Write( $interfilename);
+    if ("$x") {
+	print LOGFILE "image write = $x   \n";
+    }
+}
+
+##############################################
+# Mainline
+#
 
 my $input  = ".";
 my $lang   = "eng";
@@ -54,35 +82,81 @@ print LOGFILE "Started:....\n";
 my ($base, $dir, $ext) = fileparse( $input );
 
 my $oDir = getcwd() . $dir;
-my $output = $oDir . $base;
-#print LOGFILE "sub dir is $oDir\n";
-print LOGFILE "sub op is $output\n";
+my $interfilename = $oDir . $base;
+           
+print LOGFILE "sub op is $interfilename\n";
+print LOGFILE "sub ext is $ext\n";
+my $outHcr   = $interfilename . ".hocr";
+my $outTxt   = $interfilename . ".txt";
+my $outStats = $interfilename . ".stas";
 
 # make output dir
 make_path $oDir;
 
 # skip images that have been OCR'd already
-if ( -e "$output.hcr") {
-    print LOGFILE "sub ocr results pre-existing $output.hcr \n";
+if ( -e "$outHcr") {
+    print LOGFILE "sub ocr results pre-existing $outHcr \n";
     exit 0;
 }
 
+# brighten it by nn%
+magicBrighten ( $input, $interfilename, "150");
+
 # OCR to a hocr file:
-`tesseract $input $output -l $lang quiet hocr`;
+`tesseract $interfilename $interfilename -l $lang quiet hocr`;
+
+#`tesseract $input $interfilename -l $lang quiet hocr`;
 
 # the text appears in this tag:
 #    <strong>well</strong>
-my $outHcr = $output . ".hocr";
-my $outTxt = $output . ".txt";
 
 # get just the text from the hocr file:
-my $html = parse_htmlfile( $outHcr);
+my $hocrhtml = parse_htmlfile( $outHcr);
 my $formatter = HTML::FormatText->new( leftmargin => 0, rightmargin => 500);
-my $ascii = $formatter->format( $html);
+my $ascii = $formatter->format( $hocrhtml);
 
+# write the text file
 open( TXTFILE, "> $outTxt");
 print TXTFILE $ascii;
 close( TXTFILE);
+
+
+# <span 
+# class='ocrx_word'
+# id='word_1_331'
+# title='bbox 1451 679 1457 686; x_wconf 76'
+# lang='eng'
+# dir='ltr'>
+#  <em>I</em>
+# </span>
+
+open( STFILE, "> $outStats");
+
+# get just the x_wconf values from the hocr file:
+# write to a stats file with a wconf per line
+my $confsum = 0;
+my $confcount = 0;
+
+my $html = HTML::TagParser->new( $outHcr );
+my @list = $html->getElementsByTagName( "span" );
+foreach my $elem ( @list ) {
+    my $innertext = $elem->innerText;
+
+    my $titlevalue = $elem->getAttribute( "title" );
+    my $wconf = "none";
+    if ( $titlevalue =~ / x_wconf ([0-9]*)/ ) {
+	$wconf = $1;
+	$confsum += $1;
+	$confcount ++;
+    }
+    print STFILE " $wconf $innertext \n";
+}
+# avoid divide by zero
+if( $confcount == 0) { $confcount ++; }
+my $avg = $confsum / $confcount;
+
+print STFILE " $avg average \n";
+close( STFILE);
 
 exit 0;
 
