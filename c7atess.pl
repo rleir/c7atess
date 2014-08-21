@@ -23,8 +23,9 @@ use constant { TRUE => 1, FALSE => 0 };
 
 # get imageMagick to scale and or rotate the image
 sub magicBrighten {
-    my ($sourceFile, $interfilename, $brightenFactor) =  @_;
+    my ($sourceFile, $interfilename, $ext, $brightenFactor) =  @_;
 
+    my $ofilename = "";
     my $image = Image::Magick->new;
     my $x = $image->read( $sourceFile);
     if ("$x") {
@@ -32,15 +33,31 @@ sub magicBrighten {
     }
     print LOGFILE "sourceFile: $sourceFile    \n";
 
+    # convert jpeg2000 images to jpeg
+    print LOGFILE  $image->Get('magick') . " magick input file \n";
+    if( $image->Get('magick') eq "JP2") {
+	# Going for lossless conversion
+	$image->Set(quality=>100,compression=>'none',magick=>'jpeg');
+	$image->Strip(); # 	strip an image of all profiles and comments.
+	$ofilename = $interfilename . '.jpg';
+    } else {
+	$ofilename = $interfilename . $ext;
+    }
+    print LOGFILE "outpppFile: $ofilename    \n";
+
+# was JPEG2000
+# $image->Set (compression=>"JPEG", quality=>90);
+
     $x = $image->Mogrify( 'modulate', brightness=>$brightenFactor );
     if ("$x") {
 	print LOGFILE "image brighten = $x   \n";
     }
 
-    $x = $image->Write( $interfilename);
+    $x = $image->Write( $ofilename);
     if ("$x") {
 	print LOGFILE "image write = $x   \n";
     }
+    return $ofilename;
 }
 
 # The .hocr contains these tags:
@@ -119,13 +136,15 @@ print LOGFILE "Started:....\n";
 # /collections/tdr/oocihm/444/oocihm.lac_reel_c8008/data/sip/data/files/1869.jpg
 
 # prepend cwd, remove trailing filename
-my ($base, $dir, $ext) = fileparse( $input );
+#my ($base, $dir, $ext) = fileparse( $input );
+my ($base, $dir, $ext) = fileparse( $input, qr/\.[^.]*/ );
 
 my $oDir = getcwd() . $dir;
-my $interfilename = $oDir . $base;
+my $interfilenam  = $oDir . $base;
+my $interfilename = $oDir . $base . $ext;
            
 print LOGFILE "sub op is $interfilename\n";
-#print LOGFILE "sub ext is $ext\n";  blank!
+print LOGFILE "sub ext is $ext\n"; 
 my $outHcr   = $interfilename . ".hocr";
 my $outTxt   = $interfilename . ".txt";
 my $outStats = $interfilename . ".stas";
@@ -136,10 +155,11 @@ make_path $oDir;
 # skip images that have been OCR'd already
 if ( ! -e "$outHcr") {
     # brighten the input image by nn%
-    magicBrighten ( $input, $interfilename, "150");
+    # also, convert any jp2 files to jpg and return the name
+    my $ofilename = magicBrighten ( $input, $interfilenam, $ext, "150");
 
-    # OCR to a hocr file:
-    `tesseract $interfilename $interfilename -l $lang quiet hocr`;
+    # OCR the brightened image, producing a hocr file:
+    `tesseract $ofilename $interfilename -l $lang quiet hocr`;
 
     # get just the text from the hocr file:
     my $hocrhtml = parse_htmlfile( $outHcr);
