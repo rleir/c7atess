@@ -26,22 +26,20 @@ use Cwd 'abs_path';
 use constant { TRUE => 1, FALSE => 0 };
 
 my $input  = ".";
-my $output = ".";
 my $lang   = "eng";
 my $ocropus;
 my $verbose;
 my $help;
-my $keep = FALSE;
+#my $keep = FALSE;
 my $result = GetOptions (
                     "input=s"   => \$input,     # string
-                    "output=s"  => \$output,    # string
                     "lang=s"    => \$lang,      # string
                     "ocropus"   => \$ocropus,   # flag
                     "help"      => \$help,      # flag
-                    "keep"      => \$keep,      # flag
+#                    "keep"      => \$keep,      # flag
                     "verbose"   => \$verbose);  # flag
-if( $help || $output eq "." ) {
-    print "Usage $0 [--input=indirpath] output=outdirpath [--lang=fra] --verbose\n";
+if( $help || $input eq "." ) {
+    print "Usage $0 [--input=indirpath] [--lang=fra] --verbose\n";
     print "or    $0 --help\n";
     exit 0;
 }
@@ -50,20 +48,20 @@ if( $verbose) {
     print "input is $input\n";
 }
 my $data = abs_path($input);
-my $outdata = abs_path($output);
 
 if( $verbose) {
     print "inp is $data\n";
-    print "oup is $outdata\n";
 }
 
 # only tesseract for now
 if( ! $ocropus) {
 
     # gen hocr's in parallel 
-    # `find $data -type f -name \\*.jpg -o -name \\*.tif | parallel tesseract {} $outdata/{/.} -l $lang quiet hocr` ;
 
-    `find $data -type f -name \\*.jpg -o -name \\*.jp2 -o -name \\*.tif | parallel ./c7atess.pl --input={} --lang=$lang --verbose` ;
+    `find $data -type f -name \\*.jpg -o -name \\*.tif | parallel ./c7atess.pl --input={} --lang=$lang --verbose` ;
+
+# jpeg200 not supported by tess -o -name \\*.jp2
+
 
     # gen pdf's in parallel
 #    `find . -type f -name \\*.ppm | parallel hocr2pdf -i {} -o {.}-new.pdf "<" {.}.hocr` ;
