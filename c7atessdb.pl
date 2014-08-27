@@ -57,7 +57,6 @@ my  ($base, $dir, $ext) = fileparse( $input, qr{\.stas});
 # this gives us the image created in the brightening operation
 my $inBase = $dir . $base; 
 
-
 my $inHcrFile   = $inBase . ".hocr";
 my $inTxtFile   = $inBase . ".txt";
 my $inStatsFile = $inBase . ".stas";
@@ -69,21 +68,26 @@ substr( $inBrightenedImage, -4, 4) =~ s/.jp2/.jpg/g;
 # remove the prefix directories
 substr( $inBase, 0, 40) =~ s|/home/rleir/ocr/pdfocr/collections/||g ;
 
-#if( substr ($base, -4, 4) eq ".jp2") {
-#    $inBrightenedImage = $inbase
-
 print LOGFILE "sub input is $inHcrFile \n";
 
-# get avg word confidence from last line of the file
-open( STSFILE, "$inStatsFile");
-my $last = "";
-while (<STSFILE>) { 
-    $last = $_;
+my $brightFactor = "";
+my $last = "0";
+if( -e $inStatsFile) {
+    # get the statistics info from the file
+    # get avg word confidence from last line of the file
+    open( STSFILE, "$inStatsFile");
+    while (<STSFILE>) { 
+	$last = $_;
+    }
+    close( STSFILE);
+
+    $brightFactor = "150";
+} else {
+    $brightFactor = "101";
 }
-close( STSFILE);
 my $avgwconf = substr $last, 1, 2;
 
-
+# get the txt info from the file
 my $intxt = "";
 #Unset $/, the Input Record Separator, to make <> give the whole file at once.
 {
@@ -102,6 +106,7 @@ my $nwords = scalar @uniq_list;
 # put all in a string
 my $wordList = join(' ', @uniq_list);
 
+# get the hocr info from the file
 my $inhocr = "";
 #Unset $/, the Input Record Separator, to make <> give the whole file at once.
 {
@@ -112,7 +117,6 @@ my $inhocr = "";
 } 
 my $gzhocr = "";
 gzip \$inhocr, \$gzhocr ;
-
 
 # optimize by removing the /collections/tdr prefix
 # problems with varchar join speed
@@ -125,7 +129,7 @@ my $remarks = "";
 #           or 'does conf correlate with size'
 #           or 'how long does ocr take for size of n'
 # for now, we use the size of the brightened image zzzz
-
+my $imgFileSize = 0;
 
 # brightening
 # contrast
@@ -147,13 +151,22 @@ if( -e $inBrightenedImage ) {
     $time = $mtime - $orig_mtime;
 }
 
+#temporary
+my ($device, $inode, $mode, $nlink, $uid, $gid, $rdev, $size,
+    $atime, $mtime, $ctime, $blksize, $blocks) =
+    stat( $inTxtFile);
+
 #use when doing the ocr right now
 #my $starttime = strftime "%Y-%m-%d %H:%M:%S", localtime;
 
 # get the time from the brightened image file
 #my $starttime = strftime "%Y-%m-%d %H:%M:%S",  $orig_mtime;
 
-insertOCR ( $inBase, "tess3.03", $lang, "101", "100", $avgwconf, $nwords, $brightened_time, $time, $remarks, $orig_size, $wordList, $gzhocr) ;
+
+insertOCR ( $inBase, "tess3.03", $lang, $brightFactor, "100",
+	    $avgwconf, $nwords,
+	    $mtime,  #	    $brightened_time,
+	    $time, $remarks, $imgFileSize, $wordList, $gzhocr) ;
 
 exit 0;
 
