@@ -1,10 +1,20 @@
 #!/usr/bin/perl
 #
-# Given a image file (jpeg, png and tif), and an output directory
+# driven by find from the tdr
+# check the DB, skip existing
+# brighten
+# ocr
+# stats
+# to DB
+
+# Given a image file (jpeg, jpeg2000, png and tif),
 # run OCR on it, generating xml, text, stats, and concordance.
+#
+# The output directory is in a local tree that mirrors the tdr.
 # The directory will be created if it does not already exist.
 # Before doing OCR, brighten the input image as necessary.
 #
+# This program is run in parallel on several servers, one instance per core.
 
 use strict;
 use warnings;
@@ -17,13 +27,22 @@ use HTML::TagParser;
 use File::Path qw( make_path );
 use File::Basename;
 use Cwd;
+use Ocrdb qw( existsOCR insertOCR );
+use POSIX qw(strftime);
+use IO::Compress::Gzip qw(gzip $GzipError) ;
+use List::MoreUtils qw(uniq);
 use Image::Magick ;                # brighten
 
 use constant { TRUE => 1, FALSE => 0 };
 
 # get imageMagick to scale and or rotate the image
+# given: the input source file name
+#        the output file name (no extension)
+#        the extension of the input file
+#        the required brightening factor
+# returns the output file name
 sub magicBrighten {
-    my ($sourceFile, $interfilename, $ext, $brightenFactor) =  @_;
+    my ($sourceFile, $interfilenameNoExt, $ext, $brightenFactor) =  @_;
 
     my $ofilename = "";
     my $image = Image::Magick->new;
@@ -31,22 +50,17 @@ sub magicBrighten {
     if ("$x") {
 	print LOGFILE "image read = $x   \n";
     }
-    print LOGFILE "sourceFile: $sourceFile    \n";
 
     # convert jpeg2000 images to jpeg
-    print LOGFILE  $image->Get('magick') . " magick input file \n";
     if( $image->Get('magick') eq "JP2") {
 	# Going for lossless conversion
 	$image->Set(quality=>100,compression=>'none',magick=>'jpeg');
 	$image->Strip(); # 	strip an image of all profiles and comments.
-	$ofilename = $interfilename . '.jpg';
+	$ofilename = $interfilenameNoExt . '.jpg';
     } else {
-	$ofilename = $interfilename . $ext;
+	$ofilename = $interfilenameNoExt . $ext;
     }
     print LOGFILE "outpppFile: $ofilename    \n";
-
-# was JPEG2000
-# $image->Set (compression=>"JPEG", quality=>90);
 
     $x = $image->Mogrify( 'modulate', brightness=>$brightenFactor );
     if ("$x") {
@@ -69,6 +83,11 @@ sub magicBrighten {
 # dir='ltr'>
 #  <em>I</em>
 # </span>
+
+# save stats to a file
+# each line contains the word confidence followed by the word
+# the last line contains the average word confidence (weighted by word frequency)
+# the return is the average and the number of words
 sub saveStats {
     my ( $outHcr,  $outStats) = @_;
     open( STFILE, "> $outStats");
@@ -98,14 +117,15 @@ sub saveStats {
 
     print STFILE " $avg average \n";
     close( STFILE);
+    return ($avg, $confcount) ;
 }
 
 ##############################################
 # Mainline
 #
-
 my $input  = ".";
 my $lang   = "eng";
+my $brightFactor = "150";
 my $ocropus;
 my $verbose;
 my $help;
@@ -113,6 +133,7 @@ my $keep = FALSE;
 my $result = GetOptions (
                     "input=s"   => \$input,     # string
                     "lang=s"    => \$lang,      # string
+                    "bright=s"  => \$brightFactor,   # 
                     "ocropus"   => \$ocropus,   # flag
                     "help"      => \$help,      # flag
                     "keep"      => \$keep,      # flag
@@ -126,25 +147,30 @@ if( $help || $input eq "." ) {
 open(LOGFILE, ">>/tmp/testtess.log")
     || die "LOG open failed: $!";
 my $oldfh = select(LOGFILE); $| = 1; select($oldfh);
-print LOGFILE "Started:....\n";
-
-#if( $verbose) {
-    print LOGFILE "sub inp is $input\n";
-#}
 
 # example input path
 # /collections/tdr/oocihm/444/oocihm.lac_reel_c8008/data/sip/data/files/1869.jpg
 
-# prepend cwd, remove trailing filename
-#my ($base, $dir, $ext) = fileparse( $input );
+# remove trailing filename
 my ($base, $dir, $ext) = fileparse( $input, qr/\.[^.]*/ );
+#my  ($base, $dir, $ext) = fileparse( $input, qr{\.stas});
+
+my $inBase = $dir . $base . $ext; 
+
+# remove the prefix directories
+substr( $inBase, 0, 40) =~ s|/collections/||g ;
+print LOGFILE "sub inp is  $inBase \n";
+# check the DB 
+# temporary: count rows with any brightness factor 
+# future: only the input brightness, 
+if( existsOCR ( $inBase, "tess3.03", $lang)) {
+    exit 0;
+}
 
 my $oDir = getcwd() . $dir;
-my $interfilenam  = $oDir . $base;
+my $interfilenameNoExt  = $oDir . $base;
 my $interfilename = $oDir . $base . $ext;
            
-print LOGFILE "sub op is $interfilename\n";
-print LOGFILE "sub ext is $ext\n"; 
 my $outHcr   = $interfilename . ".hocr";
 my $outTxt   = $interfilename . ".txt";
 my $outStats = $interfilename . ".stas";
@@ -152,28 +178,78 @@ my $outStats = $interfilename . ".stas";
 # make output dir
 make_path $oDir;
 
-# skip images that have been OCR'd already
-if ( ! -e "$outHcr") {
-    # brighten the input image by nn%
-    # also, convert any jp2 files to jpg and return the name
-    my $ofilename = magicBrighten ( $input, $interfilenam, $ext, "150");
+my $starttime = time();
 
-    # OCR the brightened image, producing a hocr file:
-    `tesseract $ofilename $interfilename -l $lang quiet hocr`;
+# brighten the input image by nn%
+# also, convert any jp2 files to jpg and return the name
+my $ofilename = magicBrighten ( $input, $interfilenameNoExt, $ext, $brightFactor);
 
-    # get just the text from the hocr file:
-    my $hocrhtml = parse_htmlfile( $outHcr);
-    my $formatter = HTML::FormatText->new( leftmargin => 0, rightmargin => 500);
-    my $ascii = $formatter->format( $hocrhtml);
+# OCR the brightened image, producing a hocr file:
+`tesseract $ofilename $interfilename -l $lang quiet hocr`;
 
-    # write the text file
-    open( TXTFILE, "> $outTxt");
-    print TXTFILE $ascii;
-    close( TXTFILE);
+if ( ! -e  $outHcr) {
+    print LOGFILE "=================no hcr $outHcr\n";
+    exit 0;
 }
-# save the word confidence values
-saveStats( $outHcr,  $outStats);
+# get just the text from the hocr file:
+my $hocrhtml = "none";
+$hocrhtml = parse_htmlfile( $outHcr);
 
+# get the hocr info from the file
+my $inhocr = "";
+#Unset $/, the Input Record Separator, to make <> give the whole file at once.
+{
+    local $/=undef;
+    open FILE, $outHcr or die "Couldn't open file: $!";
+    $inhocr = <FILE>;
+    close FILE;
+} 
+# compress it
+my $gzhocr = "";
+gzip \$inhocr, \$gzhocr ;
+#gzip \$hocrhtml, \$gzhocr ;
+
+# get just the text from the hocr
+my $formatter = HTML::FormatText->new( leftmargin => 0, rightmargin => 500);
+my $ascii = $formatter->format( $hocrhtml);
+
+# write the text file
+open( TXTFILE, "> $outTxt");
+print TXTFILE $ascii;
+close( TXTFILE);
+
+# get the text into an array
+my @dup_list = split(/ /, $ascii);
+# sort uniq
+my @uniq_list = uniq(@dup_list);
+# count words
+my $nwords = scalar @uniq_list;
+# put all in a string
+my $wordList = join(' ', @uniq_list);  # zzz not used
+
+# remove the brightened file, which uses lots of disk space
+unlink  $ofilename;
+
+# save the word confidence values
+my ($avgwconf, $nwords2) = saveStats( $outHcr,  $outStats);
+
+if( $nwords != $nwords2) {
+    print LOGFILE "unique nwords $nwords  $nwords2\n";
+}
+
+# find the size of the input image
+my ($device, $inode, $mode, $nlink, $uid, $gid, $rdev, $imgFileSize,
+    $atime, $mtime, $ctime, $blksize, $blocks) =
+    stat( $input);
+
+my $time = time() - $starttime;
+my $remarks = "";
+
+# insert or replace in the DB
+insertOCR ( $inBase, "tess3.03", $lang, $brightFactor, "100",
+	    $avgwconf, $nwords,
+	    $starttime,
+	    $time, $remarks, $imgFileSize, $ascii, $gzhocr) ;
 exit 0;
 
 

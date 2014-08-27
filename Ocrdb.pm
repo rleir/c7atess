@@ -1,5 +1,5 @@
 # DB access for the ocr table
-# pm for insert, check record
+#   for insert, check record
 
 package Ocrdb;
 
@@ -14,11 +14,24 @@ use vars qw(@ISA @EXPORT @EXPORT_OK $VERSION); #  %EXPORT_TAGS
 use Exporter;
 $VERSION = 0.98;
 @ISA = qw(Exporter);
-@EXPORT = qw(insertOCR);
+@EXPORT = qw( existsOCR insertOCR);
+
+my $SQLexist = <<ENDSTAT1;
+SELECT idocr 
+FROM ocr 
+WHERE 
+    imageFile = ?
+AND
+    ocrEngine = ?
+AND
+    langParam = ?
+ENDSTAT1
+#AND
+#    brightness = ?
 
 # We Replace instead of Insert so the table index will keep
 # one record per set of unique ocr parameters
-my $statement = <<ENDSTAT;
+my $SQLreplace = <<ENDSTAT2;
 REPLACE INTO ocr 
 ( 
   imageFile,
@@ -37,9 +50,9 @@ REPLACE INTO ocr
 )
 VALUES
 ( 
-'?', ?, ?, ?, ?, ?, ?, FROM_UNIXTIME( ?), ?, ?, ?, ?, ?
+?, ?, ?, ?, ?, ?, ?, FROM_UNIXTIME( ?), ?, ?, ?, ?, ?
 );
-ENDSTAT
+ENDSTAT2
 #NOW()
 
 my $cfg = Config::IniFiles->new( -file => "/etc/c7aocr/tessdb.ini" );
@@ -48,15 +61,32 @@ my $password = $cfg->val( 'DBconn', 'password' ) ;
 my $hostname = $cfg->val( 'DBconn', 'hostname' ) ;
 my $dbname   = $cfg->val( 'DBconn', 'dbname' ) ;
 
-sub insertOCR {
-    my ( $input, $engine, $lang, $brightness, $contrast, $avgwconf, $nwords, $starttime, $time, $remarks, $orig_size, $intxt, $gzhocr) =  @_;
+open(LOGFILE, ">>/tmp/testtess.log")
+    || die "LOG open failed: $!";
+my $oldfh = select(LOGFILE); $| = 1; select($oldfh);
 
-    #if( 
-    #return "already in DB $input \n"
+# check for the existence of a tuple
+sub existsOCR {
+    my ( $file, $engine, $lang) =  @_;
+    my $dbh = DBI->connect( "DBI:mysql:database=mydb;host=$hostname", $username, $password )
+	|| die "Could not connect to database: $DBI::errstr" ;
+    my $sth = $dbh->prepare($SQLexist)   or die $dbh->errstr;
+    my $rv = $sth->execute( $file, $engine, $lang)  or die $sth->errstr;
+    my $rows = $sth->rows;
+    my $rc   = $sth->finish;
+
+    $dbh->disconnect();
+    return $rows;
+}
+
+# insert or replace a tuple
+sub insertOCR {
+    my ( $input, $engine, $lang, $brightness, $contrast,
+	 $avgwconf, $nwords, $starttime, $time, $remarks, $orig_size, $intxt, $gzhocr) =  @_;
 
     my $dbh = DBI->connect( "DBI:mysql:database=mydb;host=$hostname", $username, $password ) || die "Could not connect to database: $DBI::errstr" ;
 
-    my $rows = $dbh->do($statement, undef,
+    my $rows = $dbh->do( $SQLreplace, undef,
 			$input, $engine, $lang, $brightness, $contrast,
 			$avgwconf, $nwords, $starttime, $time, $remarks, $orig_size, $intxt, $gzhocr) ;
     $dbh->disconnect();
