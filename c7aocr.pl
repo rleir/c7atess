@@ -57,11 +57,10 @@ if( $verbose) {
 if( ! $ocropus) {
 
     # gen hocr's in parallel 
-
-    `find $data -type f -name \\*.jpg -o -name \\*.tif | parallel ./c7atess.pl --input={} --lang=$lang --verbose` ;
-
-# jpeg200 not supported by tess -o -name \\*.jp2
-
+    # input files include all .jpg, .jp2, and .tif in the tree specified.
+    # jobs are distributed to the 'eight' server and are also run on the local machine.
+    # an arbitrary (yikes) delay saves ssh from being 'overwhelmed'.
+    `find $data -type f -name \\*.jpg -o -name \\*.jp2 -o -name \\*.tif | parallel -S richard\\\@eight -S : --sshdelay 0.2 ./c7atess.pl --input={} --lang=$lang --verbose` ;
 
     # gen pdf's in parallel
 #    `find . -type f -name \\*.ppm | parallel hocr2pdf -i {} -o {.}-new.pdf "<" {.}.hocr` ;
