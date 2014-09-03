@@ -47,9 +47,7 @@ sub magicBrighten {
     my $ofilename = "";
     my $image = Image::Magick->new;
     my $x = $image->read( $sourceFile);
-    if ("$x") {
-	print LOGFILE "image read = $x   \n";
-    }
+    if ("$x") {	print LOGFILE "image read = $x   \n"; }
 
     # convert jpeg2000 images to jpeg
     if( $image->Get('magick') eq "JP2") {
@@ -62,15 +60,25 @@ sub magicBrighten {
     }
     print LOGFILE "outpppFile: $ofilename    \n";
 
-    $x = $image->Mogrify( 'modulate', brightness=>$brightenFactor );
-    if ("$x") {
-	print LOGFILE "image brighten = $x   \n";
-    }
+    my $tempfile =  $interfilenameNoExt . "temp.jpg";
+
+#    $image->Quantize(colorspace=>'gray');
+#    my $q = $image->Clone();
+#    $q->Blur( radius=>16);
+#    $x = $image->Composite ( compose=>'Divide_Src', image=>$q, composite=>'t' );
+#    if ("$x") {	print LOGFILE "image modu = $x   \n";   }
+
+#    $x = $image->Mogrify( 'modulate', brightness=>$brightenFactor );
+#    if ("$x") {	print LOGFILE "image brighten = $x   \n";    }
 
     $x = $image->Write( $ofilename);
-    if ("$x") {
-	print LOGFILE "image write = $x   \n";
-    }
+    if ("$x") { print LOGFILE "image write = $x   \n"; }
+ 
+    # works well on typewriter copy
+    # ref http://www.imagemagick.org/Usage/compose/#divide
+    `convert $ofilename -colorspace gray \\( +clone -blur 0x20 \\) -compose Divide_Src -composite $tempfile`;
+#    `convert $ofilename -negate -lat 15x15+10% -negate $tempfile`;
+    `mv $tempfile $ofilename`;
     return $ofilename;
 }
 
@@ -125,7 +133,7 @@ sub saveStats {
 #
 my $input  = ".";
 my $lang   = "eng";
-my $brightFactor = "150";
+my $brightFactor = "99";
 my $ocropus;
 my $verbose;
 my $help;
@@ -144,7 +152,7 @@ if( $help || $input eq "." ) {
     exit 0;
 }
 
-open(LOGFILE, ">>/tmp/testtess.log")
+open(LOGFILE, ">>/tmp/testtesspho.log")
     || die "LOG open failed: $!";
 my $oldfh = select(LOGFILE); $| = 1; select($oldfh);
 
@@ -163,9 +171,7 @@ print LOGFILE "sub inp is  $inBase \n";
 # check the DB 
 # temporary: count rows with any brightness factor 
 # future: only the input brightness, 
-if( existsOCR ( $inBase, "tess3.03", $lang)) {
-    exit 0;
-}
+#if( existsOCR ( $inBase, "tess3.03", $lang)) {   exit 0; }
 
 my $oDir = getcwd() . $dir;
 my $interfilenameNoExt  = $oDir . $base;
@@ -246,7 +252,8 @@ my $time = time() - $starttime;
 my $remarks = "";
 
 # insert or replace in the DB
-insertOCR ( $inBase, "tess3.03", $lang, $brightFactor, "100",
+#tess3.03-IMlat
+insertOCR ( $inBase, "tess3.03-IMdivide", $lang, $brightFactor, "100",
 	    $avgwconf, $nwords,
 	    $starttime,
 	    $time, $remarks, $imgFileSize, $ascii, $gzhocr) ;
