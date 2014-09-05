@@ -31,7 +31,8 @@ use Ocrdb qw( existsOCR insertOCR );
 use POSIX qw(strftime);
 use IO::Compress::Gzip qw(gzip $GzipError) ;
 use List::MoreUtils qw(uniq);
-use Image::Magick ;                # brighten
+#use Image::Magick ;                # brighten
+use Graphics::Magick;
 
 use constant { TRUE => 1, FALSE => 0 };
 
@@ -45,7 +46,9 @@ sub magicBrighten {
     my ($sourceFile, $interfilenameNoExt, $ext, $brightenFactor) =  @_;
 
     my $ofilename = "";
-    my $image = Image::Magick->new;
+    # my $image = Image::Magick->new;
+    my $image=Graphics::Magick->new;
+
     my $x = $image->read( $sourceFile);
     if ("$x") {	print LOGFILE "image read = $x   \n"; }
 
@@ -60,13 +63,14 @@ sub magicBrighten {
     }
     print LOGFILE "outpppFile: $ofilename    \n";
 
-    my $tempfile =  $interfilenameNoExt . "temp.jpg";
+    # my $tempfile =  $interfilenameNoExt . "temp.jpg";
 
-#    $image->Quantize(colorspace=>'gray');
-#    my $q = $image->Clone();
-#    $q->Blur( radius=>16);
+    $image->Quantize(colorspace=>'gray');
+    my $q = $image->Clone();
+    $q->Blur( radius=>0.0, sigma=>20.0); # sigma defaults to 1.0
+    $x = $q->Composite ( compose=>'Divide', image=>$image );
 #    $x = $image->Composite ( compose=>'Divide_Src', image=>$q, composite=>'t' );
-#    if ("$x") {	print LOGFILE "image modu = $x   \n";   }
+    if ("$x") {	print LOGFILE "image modu = $x   \n";   }
 
 #    $x = $image->Mogrify( 'modulate', brightness=>$brightenFactor );
 #    if ("$x") {	print LOGFILE "image brighten = $x   \n";    }
@@ -76,9 +80,13 @@ sub magicBrighten {
  
     # works well on typewriter copy
     # ref http://www.imagemagick.org/Usage/compose/#divide
-    `convert $ofilename -colorspace gray \\( +clone -blur 0x20 \\) -compose Divide_Src -composite $tempfile`;
+#    `convert $ofilename -colorspace gray \\( +clone -blur 0x20 \\) -compose Divide_Src -composite $tempfile`;
 #    `convert $ofilename -negate -lat 15x15+10% -negate $tempfile`;
-    `mv $tempfile $ofilename`;
+#    `mv $tempfile $ofilename`;
+
+    # The recommended way to destroy an object is with undef
+    undef $q;
+    undef $image;
     return $ofilename;
 }
 
