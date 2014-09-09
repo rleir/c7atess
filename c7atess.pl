@@ -56,7 +56,7 @@ sub magicBrighten {
     if( $image->Get('magick') eq "JP2") {
 	# Going for lossless conversion
 	$image->Set(quality=>100,compression=>'none',magick=>'jpeg');
-	$image->Strip(); # 	strip an image of all profiles and comments.
+#	$image->Strip(); # 	strip an image of all profiles and comments. This works in ImageMagick but not in GM
 	$ofilename = $interfilenameNoExt . '.jpg';
     } else {
 	$ofilename = $interfilenameNoExt . $ext;
@@ -80,7 +80,10 @@ sub magicBrighten {
  
     # works well on typewriter copy
     # ref http://www.imagemagick.org/Usage/compose/#divide
+# this is the command line corresponding to the above perlmagick
 #    `convert $ofilename -colorspace gray \\( +clone -blur 0x20 \\) -compose Divide_Src -composite $tempfile`;
+
+#tess3.03-IMlat
 #    `convert $ofilename -negate -lat 15x15+10% -negate $tempfile`;
 #    `mv $tempfile $ofilename`;
 
@@ -160,6 +163,9 @@ if( $help || $input eq "." ) {
     exit 0;
 }
 
+# This is saved in the DB ocrEngine field
+my $enginePreproDescrip = "tess3.03-IMdivide";
+
 open(LOGFILE, ">>/tmp/testtesspho.log")
     || die "LOG open failed: $!";
 my $oldfh = select(LOGFILE); $| = 1; select($oldfh);
@@ -170,8 +176,12 @@ my $oldfh = select(LOGFILE); $| = 1; select($oldfh);
 # remove trailing filename
 my ($base, $dir, $ext) = fileparse( $input, qr/\.[^.]*/ );
 #my  ($base, $dir, $ext) = fileparse( $input, qr{\.stas});
-
 my $inBase = $dir . $base . $ext; 
+
+if ($base eq "revisions") {
+    print LOGFILE "pruned dir $inBase \n";
+    exit 0;
+}
 
 # remove the prefix directories
 substr( $inBase, 0, 40) =~ s|/collections/||g ;
@@ -179,7 +189,9 @@ print LOGFILE "sub inp is  $inBase \n";
 # check the DB 
 # temporary: count rows with any brightness factor 
 # future: only the input brightness, 
-#if( existsOCR ( $inBase, "tess3.03", $lang)) {   exit 0; }
+if( existsOCR ( $inBase,  $enginePreproDescrip, $lang)) {
+    exit 0; 
+}
 
 my $oDir = getcwd() . $dir;
 my $interfilenameNoExt  = $oDir . $base;
@@ -260,8 +272,7 @@ my $time = time() - $starttime;
 my $remarks = "";
 
 # insert or replace in the DB
-#tess3.03-IMlat
-insertOCR ( $inBase, "tess3.03-IMdivide", $lang, $brightFactor, "100",
+insertOCR ( $inBase, $enginePreproDescrip, $lang, $brightFactor, "100",
 	    $avgwconf, $nwords,
 	    $starttime,
 	    $time, $remarks, $imgFileSize, $ascii, $gzhocr) ;

@@ -7,6 +7,7 @@
 # 
 # Automatically uses all cores of the server in parallel.
 #
+# Note: currently the input path needs to be absolute IE /coll/tdr/oo.. or the prune clause will be ineffective.
 
 # Optionally use Tesseract 
 #   (product quality)          (bounding box to the word level)
@@ -53,14 +54,25 @@ if( $verbose) {
     print "inp is $data\n";
 }
 
+# input files include all .jpg, .jp2, and .tif in the tree specified.
+my $fileTypes  = " -name \\*.jpg -o -name \\*.jp2 -o -name \\*.tif ";
+
+# jobs are distributed to the 'eight' server and are also run on the local machine.
+# an arbitrary (yikes) delay saves ssh from being 'overwhelmed'.
+my $serverList = " -S richard\\\@eight -S : --sshdelay 0.2 ";
+
+# The slave job OCR's an image, and stores the results.
+my $slaveJob   = " ./c7atess.pl --input={} --lang=$lang --verbose ";
+
+# avoid doing the revision directories, just the sip dirs.
+my $prune      = " -path /\\*/revisions -prune -o ";
+
 # only tesseract for now
 if( ! $ocropus) {
 
-    # gen hocr's in parallel 
-    # input files include all .jpg, .jp2, and .tif in the tree specified.
-    # jobs are distributed to the 'eight' server and are also run on the local machine.
-    # an arbitrary (yikes) delay saves ssh from being 'overwhelmed'.
-    `find $data -type f -name \\*.jpg -o -name \\*.jp2 -o -name \\*.tif | parallel -S richard\\\@eight -S : --sshdelay 0.2 ./c7atess.pl --input={} --lang=$lang --verbose` ;
+    # do slave jobs in parallel 
+    print "find $data $prune $fileTypes | parallel $serverList $slaveJob \n";
+    `find $data $prune $fileTypes | parallel $serverList $slaveJob `;
 
     # gen pdf's in parallel
 #    `find . -type f -name \\*.ppm | parallel hocr2pdf -i {} -o {.}-new.pdf "<" {.}.hocr` ;
