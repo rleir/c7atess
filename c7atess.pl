@@ -57,6 +57,7 @@ sub magicBrighten {
 	# Going for lossless conversion
 	$image->Set(quality=>100,compression=>'none',magick=>'jpeg');
 #	$image->Strip(); # 	strip an image of all profiles and comments. This works in ImageMagick but not in GM
+	$image->Profile(); # 	strip an image of all profiles and comments. This is the GM way instead of Strip
 	$ofilename = $interfilenameNoExt . '.jpg';
     } else {
 	$ofilename = $interfilenameNoExt . $ext;
@@ -67,7 +68,7 @@ sub magicBrighten {
 
     $image->Quantize(colorspace=>'gray');
     my $q = $image->Clone();
-    $q->Blur( radius=>0.0, sigma=>20.0); # sigma defaults to 1.0
+    $q->Blur( radius=>0.0, sigma=>30.0); # sigma defaults to 1.0
     $x = $q->Composite ( compose=>'Divide', image=>$image );
 #    $x = $image->Composite ( compose=>'Divide_Src', image=>$q, composite=>'t' );
     if ("$x") {	print LOGFILE "image modu = $x   \n";   }
@@ -75,7 +76,7 @@ sub magicBrighten {
 #    $x = $image->Mogrify( 'modulate', brightness=>$brightenFactor );
 #    if ("$x") {	print LOGFILE "image brighten = $x   \n";    }
 
-    $x = $image->Write( $ofilename);
+    $x = $q->Write( $ofilename);
     if ("$x") { print LOGFILE "image write = $x   \n"; }
  
     # works well on typewriter copy
