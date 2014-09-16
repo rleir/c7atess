@@ -14,7 +14,18 @@ use vars qw(@ISA @EXPORT @EXPORT_OK $VERSION); #  %EXPORT_TAGS
 use Exporter;
 $VERSION = 0.98;
 @ISA = qw(Exporter);
-@EXPORT = qw( existsOCR insertOCR);
+@EXPORT = qw( existsOCR insertOCR getOCR);
+
+
+my $cfg = Config::IniFiles->new( -file => "/etc/c7aocr/tessdb.ini" );
+my $username = $cfg->val( 'DBconn', 'username' ) ;
+my $password = $cfg->val( 'DBconn', 'password' ) ;
+my $hostname = $cfg->val( 'DBconn', 'hostname' ) ;
+my $dbname   = $cfg->val( 'DBconn', 'dbname' ) ;
+
+open(LOGFILE, ">>/tmp/testtess.log")
+    || die "LOG open failed: $!";
+my $oldfh = select(LOGFILE); $| = 1; select($oldfh);
 
 my $SQLexist = <<ENDSTAT1;
 SELECT idocr 
@@ -28,6 +39,26 @@ AND
 ENDSTAT1
 #AND
 #    brightness = ?
+
+
+
+# check for the existence of a tuple
+sub existsOCR {
+    my ( $file, $engine, $lang) =  @_;
+    my $dbh = DBI->connect( "DBI:mysql:database=mydb;host=$hostname", $username, $password,
+			    {RaiseError => 0, PrintError => 0, mysql_enable_utf8 => 1}
+	)
+	or die "Could not connect to database: $DBI::errstr" ;
+
+    my $sth = $dbh->prepare($SQLexist)   or die $dbh->errstr;
+    my $rv = $sth->execute( $file, $engine, $lang)  or die $sth->errstr;
+    my $rows = $sth->rows;
+    my $rc   = $sth->finish;
+
+    $dbh->disconnect();
+    return $rows;
+}
+
 
 # We Replace instead of Insert so the table index will keep
 # one record per set of unique ocr parameters
@@ -53,34 +84,6 @@ VALUES
 ?, ?, ?, ?, ?, ?, ?, FROM_UNIXTIME( ?), ?, ?, ?, ?, ?
 );
 ENDSTAT2
-#NOW()
-
-my $cfg = Config::IniFiles->new( -file => "/etc/c7aocr/tessdb.ini" );
-my $username = $cfg->val( 'DBconn', 'username' ) ;
-my $password = $cfg->val( 'DBconn', 'password' ) ;
-my $hostname = $cfg->val( 'DBconn', 'hostname' ) ;
-my $dbname   = $cfg->val( 'DBconn', 'dbname' ) ;
-
-open(LOGFILE, ">>/tmp/testtess.log")
-    || die "LOG open failed: $!";
-my $oldfh = select(LOGFILE); $| = 1; select($oldfh);
-
-# check for the existence of a tuple
-sub existsOCR {
-    my ( $file, $engine, $lang) =  @_;
-    my $dbh = DBI->connect( "DBI:mysql:database=mydb;host=$hostname", $username, $password,
-			    {RaiseError => 0, PrintError => 0, mysql_enable_utf8 => 1}
-	)
-	or die "Could not connect to database: $DBI::errstr" ;
-
-    my $sth = $dbh->prepare($SQLexist)   or die $dbh->errstr;
-    my $rv = $sth->execute( $file, $engine, $lang)  or die $sth->errstr;
-    my $rows = $sth->rows;
-    my $rc   = $sth->finish;
-
-    $dbh->disconnect();
-    return $rows;
-}
 
 # insert or replace a tuple
 sub insertOCR {
@@ -97,6 +100,36 @@ sub insertOCR {
 			$avgwconf, $nwords, $starttime, $time, $remarks, $orig_size, $intxt, $gzhocr) ;
     $dbh->disconnect();
     return  "sub ocr results pre-existing $input.hocr rows $rows \n";
+}
+
+
+# Get the most recent compressed hocr for an image
+my $SQLget = <<ENDSTAT3;
+SELECT outputHocr
+    FROM ocr 
+    WHERE imageFile = ?
+ORDER BY
+    startOcr desc ;
+ENDSTAT3
+
+# get a tuple: the most recent ocr results for a specified image
+sub getOCR {
+    my ( $file ) =  @_;
+
+    my $dbh = DBI->connect( "DBI:mysql:database=mydb;host=$hostname", $username, $password,
+			    {RaiseError => 0, PrintError => 0, mysql_enable_utf8 => 1}
+	)
+	or die "Could not connect to database: $DBI::errstr" ;
+
+    my $sth = $dbh->prepare($SQLget)   or die $dbh->errstr;
+    my $rv = $sth->execute( $file)  or die $sth->errstr;
+    my $rows = $sth->rows;
+
+    my $row = $sth->fetchrow_hashref;
+    $sth->finish;
+    $dbh->disconnect();
+
+    return @$row{'ocr','outputHocr'};
 }
 
 1;
