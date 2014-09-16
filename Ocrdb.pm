@@ -68,8 +68,11 @@ my $oldfh = select(LOGFILE); $| = 1; select($oldfh);
 # check for the existence of a tuple
 sub existsOCR {
     my ( $file, $engine, $lang) =  @_;
-    my $dbh = DBI->connect( "DBI:mysql:database=mydb;host=$hostname", $username, $password )
-	|| die "Could not connect to database: $DBI::errstr" ;
+    my $dbh = DBI->connect( "DBI:mysql:database=mydb;host=$hostname", $username, $password,
+			    {RaiseError => 0, PrintError => 0, mysql_enable_utf8 => 1}
+	)
+	or die "Could not connect to database: $DBI::errstr" ;
+
     my $sth = $dbh->prepare($SQLexist)   or die $dbh->errstr;
     my $rv = $sth->execute( $file, $engine, $lang)  or die $sth->errstr;
     my $rows = $sth->rows;
@@ -84,7 +87,10 @@ sub insertOCR {
     my ( $input, $engine, $lang, $brightness, $contrast,
 	 $avgwconf, $nwords, $starttime, $time, $remarks, $orig_size, $intxt, $gzhocr) =  @_;
 
-    my $dbh = DBI->connect( "DBI:mysql:database=mydb;host=$hostname", $username, $password ) || die "Could not connect to database: $DBI::errstr" ;
+    my $dbh = DBI->connect( "DBI:mysql:database=mydb;host=$hostname", $username, $password,
+			    {RaiseError => 0, PrintError => 0, mysql_enable_utf8 => 1}
+	)
+	or die "Could not connect to database: $DBI::errstr" ;
 
     my $rows = $dbh->do( $SQLreplace, undef,
 			$input, $engine, $lang, $brightness, $contrast,
