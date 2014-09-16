@@ -22,7 +22,7 @@ use diagnostics;
 use Getopt::Long;
 use Cwd 'abs_path';
 use HTML::FormatText;
-use HTML::Parse;
+use HTML::TreeBuilder;
 use HTML::TagParser;
 use File::Path qw( make_path );
 use File::Basename;
@@ -30,6 +30,7 @@ use Cwd;
 use Ocrdb qw( existsOCR insertOCR );
 use POSIX qw(strftime);
 use IO::Compress::Gzip qw(gzip $GzipError) ;
+use IO::HTML qw(html_file);
 use List::MoreUtils qw(uniq);
 #use Image::Magick ;                # brighten
 use Graphics::Magick;
@@ -50,7 +51,7 @@ sub magicBrighten {
     my $image=Graphics::Magick->new;
 
     my $x = $image->read( $sourceFile);
-    if ("$x") {	print LOGFILE "image read = $x   \n"; }
+    if ("$x") {	print LOGFILE "ERROR image read = $x   \n"; }
 
     # convert jpeg2000 images to jpeg
     if( $image->Get('magick') eq "JP2") {
@@ -62,7 +63,7 @@ sub magicBrighten {
     } else {
 	$ofilename = $interfilenameNoExt . $ext;
     }
-    print LOGFILE "outpppFile: $ofilename    \n";
+    print LOGFILE "INFO outpppFile: $ofilename    \n";
 
     # my $tempfile =  $interfilenameNoExt . "temp.jpg";
 
@@ -71,13 +72,13 @@ sub magicBrighten {
     $q->Blur( radius=>0.0, sigma=>30.0); # sigma defaults to 1.0
     $x = $q->Composite ( compose=>'Divide', image=>$image );
 #    $x = $image->Composite ( compose=>'Divide_Src', image=>$q, composite=>'t' );
-    if ("$x") {	print LOGFILE "image modu = $x   \n";   }
+    if ("$x") {	print LOGFILE "ERROR image modu = $x   \n";   }
 
 #    $x = $image->Mogrify( 'modulate', brightness=>$brightenFactor );
 #    if ("$x") {	print LOGFILE "image brighten = $x   \n";    }
 
     $x = $q->Write( $ofilename);
-    if ("$x") { print LOGFILE "image write = $x   \n"; }
+    if ("$x") { print LOGFILE "ERROR image write = $x   \n"; }
  
     # works well on typewriter copy
     # ref http://www.imagemagick.org/Usage/compose/#divide
@@ -180,16 +181,14 @@ my ($base, $dir, $ext) = fileparse( $input, qr/\.[^.]*/ );
 my $inBase = $dir . $base . $ext; 
 
 if ($base eq "revisions") {
-    print LOGFILE "pruned dir $inBase \n";
+    print LOGFILE "WARN pruned dir $inBase \n";
     exit 0;
 }
 
 # remove the prefix directories
 substr( $inBase, 0, 40) =~ s|/collections/||g ;
-print LOGFILE "sub inp is  $inBase \n";
-# check the DB 
-# temporary: count rows with any brightness factor 
-# future: only the input brightness, 
+print LOGFILE "INFO sub inp is  $inBase \n";
+# check the DB to see if the item has been processed already with the current engine.
 if( existsOCR ( $inBase,  $enginePreproDescrip, $lang)) {
     exit 0; 
 }
@@ -215,12 +214,9 @@ my $ofilename = magicBrighten ( $input, $interfilenameNoExt, $ext, $brightFactor
 `tesseract $ofilename $interfilename -l $lang quiet hocr`;
 
 if ( ! -e  $outHcr) {
-    print LOGFILE "=================no hcr $outHcr\n";
+    print LOGFILE "ERROR ===no hcr $outHcr\n";
     exit 0;
 }
-# get just the text from the hocr file:
-my $hocrhtml = "none";
-$hocrhtml = parse_htmlfile( $outHcr);
 
 # get the hocr info from the file
 my $inhocr = "";
@@ -236,17 +232,24 @@ my $gzhocr = "";
 gzip \$inhocr, \$gzhocr ;
 #gzip \$hocrhtml, \$gzhocr ;
 
+# open the HOCR file and sniff the encoding, and apply it. 
+my $hocrfilehandle = html_file($outHcr); # , \%options);
+
+# This "shortcut" constructor implicitly calls $new->parse_file(...)
+my $tree = HTML::TreeBuilder->new_from_file(  $hocrfilehandle);
+
 # get just the text from the hocr
 my $formatter = HTML::FormatText->new( leftmargin => 0, rightmargin => 500);
-my $ascii = $formatter->format( $hocrhtml);
+my $unformattedtext = $formatter->format($tree);
 
 # write the text file
 open( TXTFILE, "> $outTxt");
-print TXTFILE $ascii;
+binmode( TXTFILE, ":encoding(utf8)"); #actually check if it is UTF-8
+print TXTFILE $unformattedtext;
 close( TXTFILE);
 
 # get the text into an array
-my @dup_list = split(/ /, $ascii);
+my @dup_list = split(/ /, $unformattedtext);
 # sort uniq
 my @uniq_list = uniq(@dup_list);
 # count words
@@ -261,7 +264,7 @@ unlink  $ofilename;
 my ($avgwconf, $nwords2) = saveStats( $outHcr,  $outStats);
 
 if( $nwords != $nwords2) {
-    print LOGFILE "unique nwords $nwords  $nwords2\n";
+    print LOGFILE "INFO unique nwords $nwords  $nwords2\n";
 }
 
 # find the size of the input image
@@ -276,7 +279,7 @@ my $remarks = "";
 insertOCR ( $inBase, $enginePreproDescrip, $lang, $brightFactor, "100",
 	    $avgwconf, $nwords,
 	    $starttime,
-	    $time, $remarks, $imgFileSize, $ascii, $gzhocr) ;
+	    $time, $remarks, $imgFileSize, $unformattedtext, $gzhocr) ;
 exit 0;
 
 
