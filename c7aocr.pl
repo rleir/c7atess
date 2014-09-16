@@ -1,17 +1,24 @@
 #!/usr/bin/perl
 #
-# Given a directory containing images (jpeg, png and tif), and an output directory
-# run OCR on all, generating xml and text and concordance
-
-# no no  gen a pdf with a text layer to support searching.
-# 
-# Automatically uses all cores of the server in parallel.
-#
+# Given a directory containing images (jpeg, png and tif),
+# run OCR on all, generating xml and text and concordance.
+# The results are put in the ocr database.
+# Automatically uses all cores of the servers in parallel.
+# The input directory can actually be anything that find(1) accepts, perhaps with wildcards, such as 
+#     ./c7aocr.pl --input=/collections/tdr/oocihm/8* 
 # Note: currently the input path needs to be absolute IE /coll/tdr/oo.. or the prune clause will be ineffective.
+
+# Option lang: instructs Tesseract to use the specified language dictionary
+# Option engine: choose Tesseract or Ocropus or ..
+# Option help: echo usage info
+# Option keep: do not delete intermediate files after the info has been put in the DB
+# Option verbose: just echos the input location
+# 
+#
 
 # Optionally use Tesseract 
 #   (product quality)          (bounding box to the word level)
-# or Ocropus 
+# or Ocropus (future)
 #   (research project quality) (bounding box to the line level) (handles columns correctly).
 #
 #
