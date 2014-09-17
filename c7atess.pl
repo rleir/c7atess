@@ -19,6 +19,10 @@
 use strict;
 use warnings;
 use diagnostics;
+
+# warn user (from perspective of caller)
+use Carp;
+
 use Getopt::Long;
 use Cwd 'abs_path';
 use HTML::FormatText;
@@ -104,6 +108,35 @@ sub magicBrighten {
 # dir='ltr'>
 #  <em>I</em>
 # </span>
+
+# get just the text out of the .hocr file, and save it to the .txt file
+sub saveUnformattedText {
+    my ($outHcr, $outTxt) =  @_;
+    # open the HOCR file and sniff the encoding, and apply it. 
+    my $hocrfilehandle = html_file($outHcr); # , \%options);
+
+    # This "shortcut" constructor implicitly calls $new->parse_file(...)
+    my $tree = HTML::TreeBuilder->new_from_file(  $hocrfilehandle);
+
+    # get just the text from the hocr
+    my $formatter = HTML::FormatText->new( leftmargin => 0, rightmargin => 500);
+    my $unformattedtext = $formatter->format($tree);
+
+    my $utf8flag = utf8::is_utf8($unformattedtext);
+    if( ! $utf8flag) {
+	print LOGFILE "WARN unformattedtext == utf8 == false";
+    };
+    # write the text file
+    open ( TXTFILE, "> :encoding(UTF-8)", $outTxt) #actually check if it is UTF-8
+	or croak "Cannot open $outTxt: $!";
+
+    print TXTFILE $unformattedtext
+	or croak "Cannot write to $outTxt: $!";
+
+    close (TXTFILE )
+	or croak "Cannot close $outTxt: $!";
+    return $unformattedtext;
+}
 
 # save stats to a file
 # each line contains the word confidence followed by the word
@@ -227,26 +260,22 @@ my $inhocr = "";
     $inhocr = <FILE>;
     close FILE;
 } 
+
+# The hocr info is stored in a format that is not utf8 because
+# that caused problems in the gzip compression below.
+my $utf8flag1 = utf8::is_utf8($inhocr);
+if( $utf8flag1) {
+    # we do not expect to see this in the log
+    print LOGFILE "WARN inhocr == utf8 == true \n";
+}
+
 # compress it
 my $gzhocr = "";
 gzip \$inhocr, \$gzhocr ;
 #gzip \$hocrhtml, \$gzhocr ;
 
-# open the HOCR file and sniff the encoding, and apply it. 
-my $hocrfilehandle = html_file($outHcr); # , \%options);
-
-# This "shortcut" constructor implicitly calls $new->parse_file(...)
-my $tree = HTML::TreeBuilder->new_from_file(  $hocrfilehandle);
-
-# get just the text from the hocr
-my $formatter = HTML::FormatText->new( leftmargin => 0, rightmargin => 500);
-my $unformattedtext = $formatter->format($tree);
-
-# write the text file
-open( TXTFILE, "> $outTxt");
-binmode( TXTFILE, ":encoding(utf8)"); #actually check if it is UTF-8
-print TXTFILE $unformattedtext;
-close( TXTFILE);
+# get just the text out of the .hocr file, and save it to the .txt file
+my $unformattedtext = saveUnformattedText($outHcr, $outTxt);
 
 # get the text into an array
 my @dup_list = split(/ /, $unformattedtext);
@@ -255,7 +284,7 @@ my @uniq_list = uniq(@dup_list);
 # count words
 my $nwords = scalar @uniq_list;
 # put all in a string
-my $wordList = join(' ', @uniq_list);  # zzz not used
+#my $wordList = join(' ', @uniq_list);  # zzz not used
 
 # remove the brightened file, which uses lots of disk space
 unlink  $ofilename;
