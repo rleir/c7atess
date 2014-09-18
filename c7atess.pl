@@ -221,7 +221,7 @@ if( $help || $input eq "." ) {
 my $enginePreproDescrip = "tess3.03-IMdivide";
 
 open($logFile, '>>', "/tmp/testtesspho.log")
-    || die "LOG open failed: $!";
+    || croak "LOG open failed: $!";
 my $oldfh = select($logFile); $| = 1; select($oldfh);
 
 # example input path
@@ -276,7 +276,7 @@ my $inhocr = "";
 {
     local $/=undef;
     open my $hocrFile, '<', $outHcr
-	or die "Couldn't open $outHcr: $!";
+	or croak "Couldn't open $outHcr: $!";
     $inhocr = <$hocrFile>;
     close $hocrFile;
 } 

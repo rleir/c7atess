@@ -7,6 +7,9 @@ use strict;
 use warnings;
 use diagnostics;
 
+# warn user (from perspective of caller)
+use Carp;
+
 use Config::IniFiles;
 use DBI;
 
@@ -25,7 +28,7 @@ my $hostname = $cfg->val( 'DBconn', 'hostname' ) ;
 my $dbname   = $cfg->val( 'DBconn', 'dbname' ) ;
 
 open($logFile, '>>', "/tmp/testtess.log")
-    || die "LOG open failed: $!";
+    || croak "LOG open failed: $!";
 my $oldfh = select($logFile); $| = 1; select($oldfh);
 
 my $SQLexist = <<ENDSTAT1;
@@ -49,10 +52,10 @@ sub existsOCR {
     my $dbh = DBI->connect( "DBI:mysql:database=mydb;host=$hostname", $username, $password,
 			    {RaiseError => 0, PrintError => 0, mysql_enable_utf8 => 1}
 	)
-	or die "Could not connect to database: $DBI::errstr" ;
+	or croak "Could not connect to database: $DBI::errstr" ;
 
-    my $sth = $dbh->prepare($SQLexist)   or die $dbh->errstr;
-    my $rv = $sth->execute( $file, $engine, $lang)  or die $sth->errstr;
+    my $sth = $dbh->prepare($SQLexist)   or croak $dbh->errstr;
+    my $rv = $sth->execute( $file, $engine, $lang)  or croak $sth->errstr;
     my $rows = $sth->rows;
     my $rc   = $sth->finish;
 
@@ -94,7 +97,7 @@ sub insertOCR {
     my $dbh = DBI->connect( "DBI:mysql:database=mydb;host=$hostname", $username, $password,
 			    {RaiseError => 0, PrintError => 0, mysql_enable_utf8 => 1}
 	)
-	or die "Could not connect to database: $DBI::errstr" ;
+	or croak "Could not connect to database: $DBI::errstr" ;
 
     my $rows = $dbh->do( $SQLreplace, undef,
 			$input, $engine, $lang, $brightness, $contrast,
@@ -120,10 +123,10 @@ sub getOCR {
     my $dbh = DBI->connect( "DBI:mysql:database=mydb;host=$hostname", $username, $password,
 			    {RaiseError => 0, PrintError => 0, mysql_enable_utf8 => 1}
 	)
-	or die "Could not connect to database: $DBI::errstr" ;
+	or croak "Could not connect to database: $DBI::errstr" ;
 
-    my $sth = $dbh->prepare($SQLget)   or die $dbh->errstr;
-    my $rv = $sth->execute( $file)  or die $sth->errstr;
+    my $sth = $dbh->prepare($SQLget)   or croak $dbh->errstr;
+    my $rv = $sth->execute( $file)  or croak $sth->errstr;
     my $rows = $sth->rows;
 
     my $row = $sth->fetchrow_hashref;
