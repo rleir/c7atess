@@ -36,10 +36,11 @@ use POSIX qw(strftime);
 use IO::Compress::Gzip qw(gzip $GzipError) ;
 use IO::HTML qw(html_file);
 use List::MoreUtils qw(uniq);
-#use Image::Magick ;                # brighten
 use Graphics::Magick;
 
 use constant { TRUE => 1, FALSE => 0 };
+
+my $logFile;
 
 # get imageMagick to scale and or rotate the image
 # given: the input source file name
@@ -47,6 +48,10 @@ use constant { TRUE => 1, FALSE => 0 };
 #        the extension of the input file
 #        the required brightening factor
 # returns the output file name
+#
+# Note: GraphicsMagick is a replacement for ImageMagick,
+# giving better performance and fewer feature changes with new versions
+#
 sub magicBrighten {
     my ($sourceFile, $interfilenameNoExt, $ext, $brightenFactor) =  @_;
 
@@ -55,7 +60,7 @@ sub magicBrighten {
     my $image=Graphics::Magick->new;
 
     my $x = $image->read( $sourceFile);
-    if ("$x") {	print LOGFILE "ERROR image read = $x   \n"; }
+    if ("$x") {	print $logFile "ERROR image read = $x   \n"; }
 
     # convert jpeg2000 images to jpeg
     if( $image->Get('magick') eq "JP2") {
@@ -67,7 +72,7 @@ sub magicBrighten {
     } else {
 	$ofilename = $interfilenameNoExt . $ext;
     }
-    print LOGFILE "INFO outpppFile: $ofilename    \n";
+    print $logFile "INFO outpppFile: $ofilename    \n";
 
     # my $tempfile =  $interfilenameNoExt . "temp.jpg";
 
@@ -76,13 +81,13 @@ sub magicBrighten {
     $q->Blur( radius=>0.0, sigma=>30.0); # sigma defaults to 1.0
     $x = $q->Composite ( compose=>'Divide', image=>$image );
 #    $x = $image->Composite ( compose=>'Divide_Src', image=>$q, composite=>'t' );
-    if ("$x") {	print LOGFILE "ERROR image modu = $x   \n";   }
+    if ("$x") {	print $logFile "ERROR image modu = $x   \n";   }
 
 #    $x = $image->Mogrify( 'modulate', brightness=>$brightenFactor );
-#    if ("$x") {	print LOGFILE "image brighten = $x   \n";    }
+#    if ("$x") {	print $logFile "image brighten = $x   \n";    }
 
     $x = $q->Write( $ofilename);
-    if ("$x") { print LOGFILE "ERROR image write = $x   \n"; }
+    if ("$x") { print $logFile "ERROR image write = $x   \n"; }
  
     # works well on typewriter copy
     # ref http://www.imagemagick.org/Usage/compose/#divide
@@ -124,7 +129,7 @@ sub saveUnformattedText {
 
     my $utf8flag = utf8::is_utf8($unformattedtext);
     if( ! $utf8flag) {
-	print LOGFILE "WARN unformattedtext == utf8 == false";
+	print $logFile "WARN unformattedtext == utf8 == false";
     };
     # write the text file
     open ( TXTFILE, "> :encoding(UTF-8)", $outTxt) #actually check if it is UTF-8
@@ -136,6 +141,20 @@ sub saveUnformattedText {
     close (TXTFILE )
 	or croak "Cannot close $outTxt: $!";
     return $unformattedtext;
+}
+
+# count the words
+sub countWords {
+    my ( $unformattedtext) = @_;
+    # get the text into an array
+    my @dup_list = split(/ /, $unformattedtext);
+    # sort uniq
+    my @uniq_list = uniq(@dup_list);
+    # count words
+    my $nwords = scalar @uniq_list;
+    # put all in a string
+    #my $wordList = join(' ', @uniq_list);  # zzz not used
+    return $nwords;
 }
 
 # save stats to a file
@@ -201,9 +220,9 @@ if( $help || $input eq "." ) {
 # This is saved in the DB ocrEngine field
 my $enginePreproDescrip = "tess3.03-IMdivide";
 
-open(LOGFILE, ">>/tmp/testtesspho.log")
+open($logFile, '>>', "/tmp/testtesspho.log")
     || die "LOG open failed: $!";
-my $oldfh = select(LOGFILE); $| = 1; select($oldfh);
+my $oldfh = select($logFile); $| = 1; select($oldfh);
 
 # example input path
 # /collections/tdr/oocihm/444/oocihm.lac_reel_c8008/data/sip/data/files/1869.jpg
@@ -214,13 +233,13 @@ my ($base, $dir, $ext) = fileparse( $input, qr/\.[^.]*/ );
 my $inBase = $dir . $base . $ext; 
 
 if ($base eq "revisions") {
-    print LOGFILE "WARN pruned dir $inBase \n";
+    print $logFile "WARN pruned dir $inBase \n";
     exit 0;
 }
 
 # remove the prefix directories
 substr( $inBase, 0, 40) =~ s|/collections/||g ;
-print LOGFILE "INFO sub inp is  $inBase \n";
+print $logFile "INFO sub inp is  $inBase \n";
 # check the DB to see if the item has been processed already with the current engine.
 if( existsOCR ( $inBase,  $enginePreproDescrip, $lang)) {
     exit 0; 
@@ -247,7 +266,7 @@ my $ofilename = magicBrighten ( $input, $interfilenameNoExt, $ext, $brightFactor
 `tesseract $ofilename $interfilename -l $lang quiet hocr`;
 
 if ( ! -e  $outHcr) {
-    print LOGFILE "ERROR ===no hcr $outHcr\n";
+    print $logFile "ERROR ===no hcr $outHcr\n";
     exit 0;
 }
 
@@ -256,9 +275,10 @@ my $inhocr = "";
 #Unset $/, the Input Record Separator, to make <> give the whole file at once.
 {
     local $/=undef;
-    open FILE, $outHcr or die "Couldn't open file: $!";
-    $inhocr = <FILE>;
-    close FILE;
+    open my $hocrFile, '<', $outHcr
+	or die "Couldn't open $outHcr: $!";
+    $inhocr = <$hocrFile>;
+    close $hocrFile;
 } 
 
 # The hocr info is stored in a format that is not utf8 because
@@ -266,7 +286,7 @@ my $inhocr = "";
 my $utf8flag1 = utf8::is_utf8($inhocr);
 if( $utf8flag1) {
     # we do not expect to see this in the log
-    print LOGFILE "WARN inhocr == utf8 == true \n";
+    print $logFile "WARN inhocr == utf8 == true \n";
 }
 
 # compress it
@@ -277,14 +297,8 @@ gzip \$inhocr, \$gzhocr ;
 # get just the text out of the .hocr file, and save it to the .txt file
 my $unformattedtext = saveUnformattedText($outHcr, $outTxt);
 
-# get the text into an array
-my @dup_list = split(/ /, $unformattedtext);
-# sort uniq
-my @uniq_list = uniq(@dup_list);
-# count words
-my $nwords = scalar @uniq_list;
-# put all in a string
-#my $wordList = join(' ', @uniq_list);  # zzz not used
+# count the words
+my $nwords = countWords( $unformattedtext);
 
 # remove the brightened file, which uses lots of disk space
 unlink  $ofilename;
@@ -293,7 +307,7 @@ unlink  $ofilename;
 my ($avgwconf, $nwords2) = saveStats( $outHcr,  $outStats);
 
 if( $nwords != $nwords2) {
-    print LOGFILE "INFO unique nwords $nwords  $nwords2\n";
+    print $logFile "INFO unique nwords $nwords  $nwords2\n";
 }
 
 # find the size of the input image
