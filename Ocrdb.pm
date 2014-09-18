@@ -16,6 +16,7 @@ $VERSION = 0.98;
 @ISA = qw(Exporter);
 @EXPORT = qw( existsOCR insertOCR getOCR);
 
+my $logFile;
 
 my $cfg = Config::IniFiles->new( -file => "/etc/c7aocr/tessdb.ini" );
 my $username = $cfg->val( 'DBconn', 'username' ) ;
@@ -23,9 +24,9 @@ my $password = $cfg->val( 'DBconn', 'password' ) ;
 my $hostname = $cfg->val( 'DBconn', 'hostname' ) ;
 my $dbname   = $cfg->val( 'DBconn', 'dbname' ) ;
 
-open(LOGFILE, ">>/tmp/testtess.log")
+open($logFile, '>>', "/tmp/testtess.log")
     || die "LOG open failed: $!";
-my $oldfh = select(LOGFILE); $| = 1; select($oldfh);
+my $oldfh = select($logFile); $| = 1; select($oldfh);
 
 my $SQLexist = <<ENDSTAT1;
 SELECT idocr 
