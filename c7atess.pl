@@ -129,7 +129,7 @@ sub saveUnformattedText {
 
     my $utf8flag = utf8::is_utf8($unformattedtext);
     if( ! $utf8flag) {
-	print $logFile "WARN unformattedtext == utf8 == false";
+	print $logFile "WARN unformattedtext == utf8 == false $outHcr \n";
     };
     # write the text file
     open ( TXTFILE, "> :encoding(UTF-8)", $outTxt) #actually check if it is UTF-8
@@ -217,8 +217,12 @@ if( $help || $input eq "." ) {
     exit 0;
 }
 
+
+my $tessver = `tesseract --version 2>&1`;
+$tessver =~ s/tesseract ([0-9]*.[0-9]*).*/$1/s;
+
 # This is saved in the DB ocrEngine field
-my $enginePreproDescrip = "tess3.03-IMdivide";
+my $enginePreproDescrip = "tess${tessver}-IMdivide";
 
 open($logFile, '>>', "/tmp/testtesspho.log")
     || croak "LOG open failed: $!";
@@ -241,7 +245,10 @@ if ($base eq "revisions") {
 substr( $inBase, 0, 40) =~ s|/collections/||g ;
 print $logFile "INFO sub inp is  $inBase \n";
 # check the DB to see if the item has been processed already with the current engine.
-if( existsOCR ( $inBase,  $enginePreproDescrip, $lang)) {
+#if( existsOCR ( $inBase,  $enginePreproDescrip, $lang)) {
+
+# check the DB to see if the item has been processed already with any version of the engine.
+if( existsOCR ( $inBase, undef, $lang)) {
     exit 0; 
 }
 

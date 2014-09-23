@@ -10,6 +10,8 @@ use diagnostics;
 # warn user (from perspective of caller)
 use Carp;
 
+# MooseX::SimpleConfig
+# MooseX::Getopt
 use Config::IniFiles;
 use DBI;
 
@@ -44,6 +46,17 @@ ENDSTAT1
 #AND
 #    brightness = ?
 
+my $SQLexistAny = <<ENDSTAT11;
+SELECT idocr 
+FROM ocr 
+WHERE 
+    imageFile = ?
+AND
+    langParam = ?
+ENDSTAT11
+#AND
+#    brightness = ?
+
 
 
 # check for the existence of a tuple
@@ -53,9 +66,15 @@ sub existsOCR {
 			    {RaiseError => 0, PrintError => 0, mysql_enable_utf8 => 1}
 	)
 	or croak "Could not connect to database: $DBI::errstr" ;
-
-    my $sth = $dbh->prepare($SQLexist)   or croak $dbh->errstr;
-    my $rv = $sth->execute( $file, $engine, $lang)  or croak $sth->errstr;
+    my $sth;
+    if( !defined ($engine)) {
+	# any engine
+	$sth = $dbh->prepare($SQLexistAny)   or croak $dbh->errstr;
+	my $rv = $sth->execute( $file, $lang)  or croak $sth->errstr;
+    } else {
+	$sth = $dbh->prepare($SQLexist)   or croak $dbh->errstr;
+	my $rv = $sth->execute( $file, $engine, $lang)  or croak $sth->errstr;
+    }
     my $rows = $sth->rows;
     my $rc   = $sth->finish;
 
