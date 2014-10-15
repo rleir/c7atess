@@ -72,7 +72,6 @@ sub magicBrighten {
     } else {
 	$ofilename = $interfilenameNoExt . $ext;
     }
-    print $logFile "INFO outpppFile: $ofilename    \n";
 
     # my $tempfile =  $interfilenameNoExt . "temp.jpg";
 
@@ -243,7 +242,7 @@ if ($base eq "revisions") {
 
 # remove the prefix directories
 substr( $inBase, 0, 40) =~ s|/collections/||g ;
-print $logFile "INFO sub inp is  $inBase \n";
+
 # check the DB to see if the item has been processed already with the current engine.
 #if( existsOCR ( $inBase,  $enginePreproDescrip, $lang)) {
 
@@ -313,15 +312,17 @@ unlink  $ofilename;
 # save the word confidence values
 my ($avgwconf, $nwords2) = saveStats( $outHcr,  $outStats);
 
-if( $nwords != $nwords2) {
-    print $logFile "INFO unique nwords $nwords  $nwords2\n";
-}
+print $logFile "INFO nwords unique $nwords all $nwords2  $inBase \n";
+
+# remove the hocr file, which uses a bit of disk space
+unlink $outHcr;
 
 # find the size of the input image
 my ($device, $inode, $mode, $nlink, $uid, $gid, $rdev, $imgFileSize,
     $atime, $mtime, $ctime, $blksize, $blocks) =
     stat( $input);
 
+# oops, this time should be UTC or maybe 'floating' timezone though it does not matter much.
 my $time = time() - $starttime;
 my $remarks = "";
 
