@@ -53,13 +53,17 @@ cat > /etc/logrotate.d/c7aocr <<EOF
 EOF
 
 # mount the TDR by NFS
-echo  "192.168.1.169:/cihmz1/collections /collections   nfs4 ro,auto,soft,intr,nolock,nodev,nosuid,async,noacl,noatime,nodiratime  2 2" >> /etc/fstab
+echo  "192.168.1.169:/cihmz1/repository /collections.new/pool1   nfs4 ro,auto,soft,intr,nolock,nodev,nosuid,async,noacl,noatime,nodiratime  2 2" >> /etc/fstab
 
 mkdir -p /collections
+mkdir -p /collections.new/pool1
 chown richard:users /collections
+chown -R richard:users /collections.new
 
 # if you install a second time, the following line will fail
-mount /collections
+mount /collections.new/pool1
+
+ln -s /collections.new/pool1/aip /collections/tdr
 
 echo  "192.168.1.131   arundel " >> /etc/hosts
 
