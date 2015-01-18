@@ -13,7 +13,7 @@
 </head>
 <body>
 	<header>
-		<span>Task list</span>
+		<span>OCR Job Control</span>
 	</header>
 	<main  id="taskPage">
 	<section id="taskCreation" >
@@ -37,10 +37,10 @@
 	<section>
 		<table id="tblTasks">
 			<colgroup>
-				<col width="40%">
-				<col width="40%">
-				<col width="05%">
-				<col width="15%">
+				<col width="70%">
+				<col width="10%">
+				<col width="01%">
+				<col width="19%">
 			</colgroup>
 			<thead>
 				<tr>
@@ -53,12 +53,20 @@
 			<tbody>
 			</tbody>
 		</table>
+                <div>
+                  <p>
+                    The most recent log line:
+                  </p>
+                  <p>
+                    <span  id="statusLine">                </span>
+                  </p>
+                </div>
 		<nav>
 			<a href="#" id="btnAsk">non-functional button</a>
 		</nav>
 	</section>
 	</main>
-	<footer>doing it right zzzz</footer>
+	<footer>This is the live OCR system, with no 'OK/Cancel' prompts.</footer>
 </body>
 <script>
 $(document).ready(function() {
@@ -73,8 +81,8 @@ $(document).ready(function() {
 	<td>${category}</td>
 	<td>
 		<nav>
-			<a href="#">Edit</a>
-			<a href="#">Complete</a>
+			<a href="#">Pause</a>
+			<a href="#">UnPause</a>
 			<a href="#" class="deleteRow">Delete</a>
 		</nav>
 	</td>

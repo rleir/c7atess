@@ -18,6 +18,24 @@ tasksController = function() {
                     $(evt.target).parents('tr').remove(); 
                 });
                 
+                $(function () {
+                    var $element = $(taskPage).find('#statusLine');
+                    setInterval(function () {
+                        promise = $.ajax({
+                            type : "GET",
+                            url : "/log",
+                            cache: false
+                        });
+
+                        promise.done( function(data) {
+                            $element.text(data);
+                        });
+                        promise.fail( function(data) {
+                            $element.text("fail");
+                        });
+                    }, 1000);
+                });
+
                 $(taskPage).find('#saveTask').click(function(evt) {
                     evt.preventDefault();
                     if ($(taskPage).find('form').valid()) {
