@@ -83,6 +83,11 @@ nav a {
 	padding:5px 10px;
 }
 
+nav a.greyed {
+	background: #73979a;
+	color: #ddd;
+}
+
 label {
 	display: block;
 	padding: 8px 0 8px 0;

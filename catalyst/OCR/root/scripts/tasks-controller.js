@@ -18,43 +18,53 @@ tasksController = function() {
                     $(evt.target).parents('tr').remove(); 
                 });
                 
+                $(taskPage).find('#startNewJob').click(function(evt) {
+                    evt.preventDefault();
+                    if ($(taskPage).find('form').valid()) {
+//                        var task = $('form').toObject();
+//                        $('#taskRow').tmpl(task).appendTo($(taskPage).find('#tblTasks tbody'));
+                    }
+                });
+
+                // create the first table row
+                var task = $('form').toObject();
+                $('#taskRow').tmpl(task).appendTo($(taskPage).find('#tblTasks tbody'));
+
+                // create a repeating action
                 $(function () {
-                    var $element = $(taskPage).find('#statusLine');
+                    var $element1 = $(taskPage).find('#statusLine');
+                    var $element2 = $(taskPage).find('#tblTasks tbody tr td').filter(":first");
+                    // or var $element2 = $(taskPage).find('#tblTasks tbody tr td').filter(":eq( 0 )")
                     setInterval(function () {
-                        promise = $.ajax({
+                        promise1 = $.ajax({
                             type : "GET",
                             url : "/log",
                             cache: false
                         });
-
-                        promise.done( function(data) {
-                            $element.text(data);
+                        // success. update the status line with the log txt
+                        promise1.done( function(data) {
+                            $element1.text(data);
                         });
-                        promise.fail( function(data) {
-                            $element.text("fail");
+                        promise1.fail( function(data) {
+                            $element1.text("failed to get log text");
                         });
-                    }, 1000);
-                });
 
-                $(taskPage).find('#saveTask').click(function(evt) {
-                    evt.preventDefault();
-                    if ($(taskPage).find('form').valid()) {
-                        promise = $.ajax({
+                        promise2 = $.ajax({
                             type : "GET",
                             url : "/status",
                             cache: false
                         });
-                        var task = $('form').toObject();
-                        $('#taskRow').tmpl(task).appendTo($(taskPage).find('#tblTasks tbody'));
-
-                        promise.done( function(data) {
-                            $(taskPage).find('#tblTasks tbody tr td').filter(":first").text(data);
+                        // success. update the first td of first row with the status text
+                        promise2.done( function(data) {
+                            $element2.text(data);
                         });
-                        promise.fail( function(data) {
-                            $(taskPage).find('#tblTasks tbody tr td').filter(":eq( 0 )").text(data);
+                        // failure. update the first td of first row with the failure message
+                        promise2.fail( function(data) {
+                            $element2.text('failed to get status');
                         });
-                    }
+                    }, 2000);
                 });
+
                 initialised = true;
             }
         } 

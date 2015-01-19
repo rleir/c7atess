@@ -23,11 +23,8 @@ Catalyst Controller.
 
 sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
-    my $dirpath = `ps -aef | grep c7aocr.pl | grep -m 1 input `;
+    my $dirpath = `ps a -o etime,pid,cmd  | grep c7aocr.pl | grep -v grep `;
 
-#     @args = ("ps -aef | grep c7aocr.pl", "", "");
-# my $dirpath = system(@args) == 0
- ##   or $dirpath = "system failed: $?"
     $c->response->body( $dirpath );
 }
 
