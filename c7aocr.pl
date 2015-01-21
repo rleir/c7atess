@@ -66,7 +66,7 @@ my $fileTypes  = " -name \\*.jpg -o -name \\*.jp2 -o -name \\*.tif ";
 
 # jobs are distributed to the 'eight' server and are also run on the local machine.
 # an arbitrary (yikes) delay saves ssh from being 'overwhelmed'.
-my $serverList = " -S richard\\\@darcy-pc -S richard\\\@yb -S richard\\\@xynotyro -S richard\\\@aragon -S richard\\\@zamorano -S : --sshdelay 0.2 ";
+my $serverList = " -S richard\\\@darcy-pc -S richard\\\@yb -S richard\\\@xynotyro -S 6/richard\\\@aragon -S richard\\\@zamorano -S : --sshdelay 0.2 ";
 
 # xynotyro.office.c7a.ca
 
