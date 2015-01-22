@@ -26,7 +26,11 @@ sub index :Path :Args(0) {
     my $treePath = $c->request->body_data->{"treePath"} // '';
     my $collID   = $c->request->body_data->{"collID"}   // '';
 
-    $collID = system("./lib/c7aocrtest.pl --input=$treePath --verbose & ");
+    # remove any leading spaces
+    $treePath =~ s/^\s+//;
+    
+    # start a job
+    $collID = system("./c7aocr.pl --input=$treePath --verbose & ");
 
     $c->response->body("treePath $treePath $collID");
 }
