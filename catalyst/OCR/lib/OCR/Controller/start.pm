@@ -1,4 +1,4 @@
-package OCR::Controller::status;
+package OCR::Controller::start;
 use Moose;
 use namespace::autoclean;
 
@@ -6,7 +6,7 @@ BEGIN { extends 'Catalyst::Controller'; }
 
 =head1 NAME
 
-OCR::Controller::status - Catalyst Controller
+OCR::Controller::start - Catalyst Controller
 
 =head1 DESCRIPTION
 
@@ -23,14 +23,12 @@ Catalyst Controller.
 
 sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
-    my $dirpath = `ps a -o etime,pid,cmd  | grep c7aocr.pl | grep -v grep `;
-    my $jobpid = 'none';
-    if( $dirpath =~ m{ (\d+) } ) {
-        $jobpid = $1;
-    }
-    `echo $jobpid > /var/run/c7aocr/jobpids`;
+    my $treePath = $c->request->body_data->{"treePath"} // '';
+    my $collID   = $c->request->body_data->{"collID"}   // '';
 
-    $c->response->body( $dirpath );
+    $collID = system("./lib/c7aocrtest.pl --input=$treePath --verbose & ");
+
+    $c->response->body("treePath $treePath $collID");
 }
 
 

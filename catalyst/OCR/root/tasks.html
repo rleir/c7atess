@@ -19,14 +19,15 @@
 	<section id="taskCreation" >
 		<form id="taskForm">
 			<div>
-				<label>Top Directory of Tree</label> <input type="text" required="required"
-					name="task" class="large" placeholder="/repository/aip/oocihm/040/" maxlength="200"  />
+				<label>Top Directory of Tree</label> <input type="text" required="required" autocomplete="on"
+					name="taskTree" id="treePath" class="large" placeholder="/repository/aip/oocihm/040/" maxlength="200"  />
 			</div>
 			<div>
-				<label>Adaptive</label> <select name="category">
-					<option value="GraphicsMagic">gm</option>
-					<option value="OpenCV">cv</option>
-				</select>
+                          OR
+	                </div>
+			<div>
+				<label>Collection ID</label> <input type="text" required="required" autocomplete="on"
+					name="taskColl" id="collID" class="large" placeholder="oocihm.lac_reel_h1377" maxlength="200"  />
 			</div>
 			<nav>
 				<a href="#" id="startNewJob" class="greyed" >Start New Job</a>
