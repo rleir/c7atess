@@ -10,133 +10,132 @@ margin: 0;
 font-size: 12px;
 }
 
-
 header {
-	width:100%;
-	height:80px;
-	background:#d1e0e1;
-	color: #333;
-	font-weight: bold;
-	font-size: 20px;
-	text-align:center;
-	line-height: 80px;
+    width:100%;
+    height:80px;
+    background:#d1e0e1;
+    color: #333;
+    font-weight: bold;
+    font-size: 20px;
+    text-align:center;
+    line-height: 80px;
 }
 
 footer {
-   width:100%;
-   height:60px; 
-   background:#d1e0e1;
-   font-size: 12px;
-   text-align:center;
-   line-height: 80px;
-   margin-top:30px;
+    width:100%;
+    height:60px; 
+    background:#d1e0e1;
+    font-size: 12px;
+    text-align:center;
+    line-height: 80px;
+    margin-top:30px;
 }
 
 table, th, td
 {
-border: 1px solid #888;
+    border: 1px solid #888;
 }
 
 section {
-	margin:20px 0 0 20px;
+    margin:20px 0 0 20px;
 }
 
 table {
-	width:90%;
-	border-collapse:collapse;
+    width:90%;
+    border-collapse:collapse;
 }
 
 thead {
-	line-height: 30px;
+    line-height: 30px;
 }
 
 thead th {
-	background: #53777a;
-	color: #fff;
-	font-size: 12px;
-	font-weight: bold;
-	text-align:center;
+    background: #53777a;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    text-align:center;
 }
 
 td {
-	font-size: 11px;
-	line-height: 25px;
-	padding-left: 10px;
+    font-size: 11px;
+    line-height: 25px;
+    padding-left: 10px;
 }
 
 .even {
-	background-color: #f8f8f8;
+    background-color: #f8f8f8;
 }
 
 nav {
-	margin:15px 0 10px 0;
+    margin:15px 0 10px 0;
 }
 
 nav a {
-	background: #53777a;
-	color: #fff;
-	width: 80px;
-	text-decoration: none;
-	border: 1px solid #5b5b5b;
-	font-size: 13px;
-	text-align:  center;
-	padding:5px 10px;
+    background: #53777a;
+    color: #fff;
+    width: 80px;
+    text-decoration: none;
+    border: 1px solid #5b5b5b;
+    font-size: 13px;
+    text-align:  center;
+    padding:5px 10px;
 }
 
 nav a.greyed {
-	background: #73979a;
-	color: #ddd;
+    background: #73979a;
+    color: #ddd;
 }
 
 label {
-	display: block;
-	padding: 8px 0 8px 0;
-	color: #333;
+    display: block;
+    padding: 8px 0 8px 0;
+    color: #333;
 }
 
 input {
-	border-radius: 3px;
-	height: 24px;
-	border: 1px solid #AAA;
-	padding: 0 7px;
+    border-radius: 3px;
+    height: 24px;
+    border: 1px solid #AAA;
+    padding: 0 7px;
 }
 
 input.large {
-	width: 400px;
+    width: 400px;
 }
 
 select {
-	border: 1px solid #AAA;
-	overflow: hidden;
-	margin-right: 15px;
-	width: 200px;
+    border: 1px solid #AAA;
+    overflow: hidden;
+    margin-right: 15px;
+    width: 200px;
 }
 
 .required {
-	color: red;
+    color: red;
 }
 
 .not {
-	display:none;	
+    display:none;    
 }
 
 .rowHighlight {
-	font-weight:bold;
+    font-weight:bold;
 } 
 
 label.error {
-	color: red;
+    color: red;
             font-weight:bold;
 }
 
 .overdue {
-	background: #F7DCE5;
+    background: #F7DCE5;
 }
 
 .warning {
-	background: #F7F7DC;
+    background: #F7F7DC;
 }
 
 .taskCompleted {
-	text-decoration: line-through;
+    text-decoration: line-through;
 }
