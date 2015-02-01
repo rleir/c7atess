@@ -62,7 +62,7 @@ ENDSTAT11
 # check for the existence of a tuple
 sub existsOCR {
     my ( $file, $engine, $lang) =  @_;
-    my $dbh = DBI->connect( "DBI:mysql:database=mydb;host=$hostname", $username, $password,
+    my $dbh = DBI->connect( "DBI:mysql:database=$dbname;host=$hostname", $username, $password,
 			    {RaiseError => 0, PrintError => 0, mysql_enable_utf8 => 1}
 	)
 	or croak "Could not connect to database: $DBI::errstr" ;
@@ -113,7 +113,7 @@ sub insertOCR {
     my ( $input, $engine, $lang, $brightness, $contrast,
 	 $avgwconf, $nwords, $starttime, $time, $remarks, $orig_size, $intxt, $gzhocr) =  @_;
 
-    my $dbh = DBI->connect( "DBI:mysql:database=mydb;host=$hostname", $username, $password,
+    my $dbh = DBI->connect( "DBI:mysql:database=$dbname;host=$hostname", $username, $password,
 			    {RaiseError => 0, PrintError => 0, mysql_enable_utf8 => 1}
 	)
 	or croak "Could not connect to database: $DBI::errstr" ;
@@ -139,7 +139,7 @@ ENDSTAT3
 sub getOCR {
     my ( $file ) =  @_;
 
-    my $dbh = DBI->connect( "DBI:mysql:database=mydb;host=$hostname", $username, $password,
+    my $dbh = DBI->connect( "DBI:mysql:database=$dbname;host=$hostname", $username, $password,
 			    {RaiseError => 0, PrintError => 0, mysql_enable_utf8 => 1}
 	)
 	or croak "Could not connect to database: $DBI::errstr" ;

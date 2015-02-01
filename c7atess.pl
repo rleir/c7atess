@@ -245,12 +245,10 @@ if ($base eq "revisions") {
 #substr( $inBase, 0, 40) =~ s|/collections/||g ;
 
 # now we have it automatically remove all up to the oocihm or oop:
-#$inbase =~ s|^/collections.new/pool[0-9]/aip/||
-
 # take a valid TDR filepath, leaving the prefix whatevers
-my $matchedIt = ( $inbase =~ s|^.*?/([a-z]+/[0-9]{3}/[a-z]+\.[a-z_0-9]+?/data/sip/data/files/[0-9]+\.[a-z]+?)$|$1|i );
+my $matchedIt = ( $inBase =~ s|^.*?/([a-z]+/[0-9]{3}/[a-z]+\.[a-z_0-9]+?/data/sip/data/files/[0-9]+\.[a-z]+?)$|$1|i );
 if( !$matchedIt) {
-    print $logFile "ERROR === bad dirpath $inbase = $dir . $base . $ext \n";
+    print $logFile "ERROR === bad dirpath $inBase = $dir . $base . $ext \n";
     exit 0;
 }
 
