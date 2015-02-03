@@ -33,6 +33,30 @@ use Cwd 'abs_path';
 
 use constant { TRUE => 1, FALSE => 0 };
 
+use Fcntl qw/ :flock /;
+use File::Basename;
+
+# use the operating system’s facility for cooperative locking: 
+# at startup, attempt to lock a certain file. If successful, 
+# this program knows it’s the only one. Otherwise, another process
+# already has the lock, so the new process exits. 
+
+my $base0 = basename $0;
+
+my $LOCK = "/var/run/c7aocr/.lock-$base0";
+
+sub take_lock {
+    open my $fh, ">", $LOCK or die "$base0: open $LOCK: $!";
+
+    unless (flock $fh, LOCK_EX | LOCK_NB) {
+        warn "failed to lock $LOCK; exiting.";
+        exit 1;
+    }
+    $fh;
+}
+
+my $token = take_lock;
+
 my $input  = ".";
 my $lang   = "eng";
 my $ocropus;
@@ -66,9 +90,7 @@ my $fileTypes  = " -name \\*.jpg -o -name \\*.jp2 -o -name \\*.tif ";
 
 # jobs are distributed to the 'eight' server and are also run on the local machine.
 # an arbitrary (yikes) delay saves ssh from being 'overwhelmed'.
-my $serverList = " -S richard\\\@darcy-pc -S richard\\\@yb -S richard\\\@xynotyro -S 6/richard\\\@aragon -S richard\\\@zamorano -S : --sshdelay 0.2 ";
-
-# xynotyro.office.c7a.ca
+my $serverList = " -S richard\\\@darcy-pc -S richard\\\@yb -S richard\\\@xynotyro -S richard\\\@aragon -S richard\\\@zamorano -S : --sshdelay 0.2 ";
 
 # The slave job OCR's an image, and stores the results.
 my $slaveJob   = " ./c7atess.pl --input={} --lang=$lang --verbose ";
