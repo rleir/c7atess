@@ -33,7 +33,7 @@ sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
 
     # initialize to none.
-    # when a job(s) is running, this will get a PID
+    # when a job(s) is running, this file will contain a PID
     my $jobpid = 'none';
     `cat $jobpid > /var/run/c7aocr/jobpids`;
 
