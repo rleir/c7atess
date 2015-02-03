@@ -246,7 +246,7 @@ if ($base eq "revisions") {
 
 # now we have it automatically remove all up to the oocihm or oop:
 # take a valid TDR filepath, leaving the prefix whatevers
-my $matchedIt = ( $inBase =~ s|^.*?/([a-z]+/[0-9]{3}/[a-z]+\.[a-z_0-9]+?/data/sip/data/files/[0-9.a-z]+?)$|$1|i );
+my $matchedIt = ( $inBase =~ s|^.*?/([a-z]+/[0-9]{3}/[a-z]+\.[a-z_0-9]+?/data/sip/data/files/[0-9._a-z]+?)$|$1|i );
 if( !$matchedIt) {
     print $logFile "ERROR === bad dirpath $inBase = $dir . $base . $ext \n";
     exit 0;
