@@ -85,6 +85,13 @@ if( $verbose) {
     print "inp is $data\n";
 }
 
+if ($lang =~ /(\w{1}[\w-.]*)/) {
+    $lang = "$1";
+} else {
+    warn ("TAINTED DATA : $lang: $!");
+    $lang = ""; # successful match did not occur
+}
+
 # input files include all .jpg, .jp2, and .tif in the tree specified.
 my $fileTypes  = " -name \\*.jpg -o -name \\*.jp2 -o -name \\*.tif ";
 
