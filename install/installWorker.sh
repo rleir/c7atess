@@ -54,14 +54,17 @@ EOF
 
 # mount the TDR by NFS
 echo  "192.168.1.169:/cihmz1/repository /collections.new/pool1   nfs4 ro,auto,soft,intr,nolock,nodev,nosuid,async,noacl,noatime,nodiratime  2 2" >> /etc/fstab
+echo  "192.168.1.169:/cihmz2/repository /collections.new/pool2   nfs4 ro,auto,soft,intr,nolock,nodev,nosuid,async,noacl,noatime,nodiratime  2 2" >> /etc/fstab
 
 mkdir -p /collections
 mkdir -p /collections.new/pool1
+mkdir -p /collections.new/pool2
 chown richard:users /collections
 chown -R richard:users /collections.new
 
-# if you install a second time, the following line will fail
+# if you install a second time, the following lines will fail
 mount /collections.new/pool1
+mount /collections.new/pool2
 
 ln -s /collections.new/pool1/aip /collections/tdr
 
