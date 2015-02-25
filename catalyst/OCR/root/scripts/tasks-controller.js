@@ -1,5 +1,5 @@
 
-tasksController = function() { 
+var tasksController = function() { 
     var taskPage;
     var initialised = false;
     
@@ -32,7 +32,7 @@ tasksController = function() {
                     ajaxData.treePath =  $(taskPage).find('#treePath').val();
                     ajaxData.collID   =  $(taskPage).find('#collID').val();
 
-                    promise4 = $.ajax({
+                    var promise4 = $.ajax({
                         type : "POST",
                         url : "/start",
                         contentType : "application/JSON",
@@ -92,7 +92,7 @@ tasksController = function() {
                     var ajaxData = new Object();
                     ajaxData.none = "none";
 
-                    promise3 = $.ajax({
+                    var promise3 = $.ajax({
                         type : "POST",
                         url : "/stop",
                         contentType : "application/JSON",
@@ -117,7 +117,7 @@ tasksController = function() {
                     var ajaxData = new Object();
                     ajaxData.sigName = "tstp";
 
-                    promise3 = $.ajax({
+                    var promise3 = $.ajax({
                         type : "POST",
                         url : "/pause",
                         contentType : "application/JSON",
@@ -143,7 +143,7 @@ tasksController = function() {
                     var ajaxData = new Object();
                     ajaxData.sigName = "cont";
 
-                    promise3 = $.ajax({
+                    var promise3 = $.ajax({
                         type : "POST",
                         url : "/pause",
                         contentType : "application/JSON",
@@ -169,7 +169,7 @@ tasksController = function() {
                     var $comLiElement = $(taskPage).find('#tblTasks tbody tr td').filter(":first");
                     // or var $comLiElement = $(taskPage).find('#tblTasks tbody tr td').filter(":eq( 0 )")
                     setInterval(function () {
-                        promise1 = $.ajax({
+                        var promise1 = $.ajax({
                             type : "GET",
                             url : "/log",
                             cache: false
@@ -182,7 +182,7 @@ tasksController = function() {
                             $statusLiElement.text("failed to get log text");
                         });
 
-                        promise2 = $.ajax({
+                        var promise2 = $.ajax({
                             type : "GET",
                             url : "/status",
                             cache: false
