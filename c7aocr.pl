@@ -85,7 +85,7 @@ if( $verbose) {
     print "inp is $data\n";
 }
 
-if ($lang =~ /(\w{1}[\w-.]*)/) {
+if ($lang =~ /(\w{1}[-\w]*)/ ) {
     $lang = "$1";
 } else {
     warn ("TAINTED DATA : $lang: $!");
