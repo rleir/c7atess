@@ -34,6 +34,9 @@ use Cwd 'abs_path';
 use constant { TRUE => 1, FALSE => 0 };
 
 use Fcntl qw/ :flock /;
+#  sub LOCK_EX { 2 } ## exclusive lock
+#  sub LOCK_UN { 8 } ## unlock
+
 use File::Basename;
 
 # use the operating system’s facility for cooperative locking: 
@@ -53,6 +56,11 @@ sub take_lock {
         exit 1;
     }
     $fh;
+}
+
+sub unlock {
+    my ($fh) = @_;
+    flock($fh, LOCK_UN) or die "Cannot unlock - $!\n";
 }
 
 my $token = take_lock;
@@ -117,6 +125,10 @@ if( ! $ocropus) {
 #    if( $? >> 8) { die "cannot find and h2p $? \n" };
 
 }
+
+# rm /var/run/c7aocr/.lock-c7aocrtest.pl
+# unlink $LOCK or warn "Could not unlink $LOCK: $!";
+unlock ($token);
 
 exit 0;
 
