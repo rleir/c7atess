@@ -31,7 +31,7 @@ mkdir -p /etc/c7aocr
 cat > /etc/c7aocr/tessdb.ini <<EOF
 [DBconn]
 hostname=yb.office.c7a.ca
-dbname=mydb
+dbname=ocrResults
 username=ocruser
 password=whydidu
 
