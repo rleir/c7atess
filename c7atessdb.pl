@@ -8,9 +8,11 @@
 #
 #
 
-use strict;
-use warnings;
-use diagnostics;
+use common::sense;
+#use strict;
+#use warnings;
+#use diagnostics;
+
 use Getopt::Long;
 use Cwd 'abs_path';
 use HTML::FormatText;

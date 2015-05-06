@@ -1,0 +1,17 @@
+Installation on a worker slave is by installWorker.sh.
+This is pushed to a worker by pushWorker.sh
+
+In /etc/c7aocr/tessdb.ini, normally we have 
+  [DBconn]
+  hostname=quark.office.c7a.ca
+
+or 
+  [DBconn]
+  hostname=yb.office.c7a.ca
+
+However, in the special case where the OCR database machine is also an OCR slave machine, we need:
+  [DBconn]
+  hostname=localmysql
+
+See also 
+  ./catalyst/OCR/README

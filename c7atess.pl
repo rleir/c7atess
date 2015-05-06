@@ -16,6 +16,7 @@
 #
 # This program is run in parallel on several servers, one instance per core.
 
+#use common::sense;
 use strict;
 use warnings;
 use diagnostics;

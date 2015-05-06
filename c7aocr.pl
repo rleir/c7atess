@@ -23,9 +23,10 @@
 #
 #
 
-use strict;
-use warnings;
-use diagnostics;
+use common::sense;
+#use strict;
+#use warnings;
+#use diagnostics;
 
 #use File::Temp qw(tempdir);
 use Getopt::Long;

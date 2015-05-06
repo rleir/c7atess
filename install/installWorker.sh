@@ -30,7 +30,7 @@ PERL_MM_USE_DEFAULT=1 cpan -i  HTML::TagParser
 mkdir -p /etc/c7aocr
 cat > /etc/c7aocr/tessdb.ini <<EOF
 [DBconn]
-hostname=arundel
+hostname=yb.office.c7a.ca
 dbname=mydb
 username=ocruser
 password=whydidu
