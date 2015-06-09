@@ -8,7 +8,22 @@ Installation:
 
 There needs to be a directory /var/run/c7aocr which is writeable by the user running this cat app.
 
-There needs to be a directory /var/log/c7aocr/ in each slave computer which is writeable by the user running this cat app. I recommend log rotation on this in  /etc/logrotate.d/c7aocr (correct the user,group). With log rotation, it becomes easy to compare the performance of the slave computers.
+Installation on a worker slave is by installWorker.sh.
+This is pushed to a worker by pushWorker.sh
+
+In /etc/c7aocr/tessdb.ini, normally we have 
+  [DBconn]
+  hostname=quark.office.c7a.ca
+
+or 
+  [DBconn]
+  hostname=yb.office.c7a.ca
+
+However, in the special case where the OCR database machine is also an OCR slave machine, we need:
+  [DBconn]
+  hostname=localmysql
+
+Slave log dir: The installation created a directory /var/log/c7aocr/ in each slave computer which is writeable by the user running this cat app. Log rotation on this is in  /etc/logrotate.d/c7aocr (correct the user,group). With log rotation, it becomes easy to compare the performance of the slave computers.
 
 /var/log/c7aocr/*.log {
 	daily
@@ -16,4 +31,3 @@ There needs to be a directory /var/log/c7aocr/ in each slave computer which is w
 	rotate 52
 	create 644 richard adm
 }
-

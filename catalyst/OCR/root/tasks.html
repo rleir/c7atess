@@ -1,14 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"  debug="true">
 <head>
 <meta charset="utf-8">
-<title>Task list</title>
+<title>CIHM OCR Task list</title>
 <link rel="stylesheet" type="text/css" href="styles/tasks.css"
     media="screen" />
 <script src="scripts/jquery-2.0.3.js"></script>
 <script src="scripts/jquery-tmpl.js"></script>
 <script src="scripts/jquery.validate.js"></script>
 <script src="scripts/jquery-serialization.js"></script>
+<!-- script type="text/javascript" src="https://getfirebug.com/firebug-lite.js"></script -->
 <script src="scripts/tasks-controller.js"></script>
 </head>
 <body>
@@ -17,7 +18,16 @@
     </header>
     <main  id="taskPage">
     <section id="taskCreation" >
-        <form id="taskForm">
+        <p>
+            Choose a directory in the TDR. An absolute directory IE /collections.new/pool1/aip/oocihm/083, existing on the OCR master server. 
+            This is in a filesystem which is a NFS mount of the TDR.
+            All images below that will be OCR'd, and the results go to the OCR database. The records created in the 
+            database are identified by the image file names, IE oop/727/oop.debates_CDC1905_03/data/sip/data/files/0043.jpg, which is the TDR path for that file.
+        </p>
+        <p>
+            The directory can actually be multiple directories, described as /collections.new/pool1/aip/oocihm/08\?
+        </p>
+        <form id="taskForm" autocomplete="on">
             <div>
                 <label>Top Directory of Tree</label> <input type="text" required="required" autocomplete="on"
                     name="taskTree" id="treePath" class="large" placeholder="/repository/aip/oocihm/040/" maxlength="200"  />

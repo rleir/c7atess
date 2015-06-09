@@ -26,17 +26,13 @@ use Carp;
 
 use Getopt::Long;
 use Cwd 'abs_path';
-use HTML::FormatText;
-use HTML::TreeBuilder;
-use HTML::TagParser;
 use File::Path qw( make_path );
-use File::Basename;
+#use File::Basename;
 use Cwd;
-use Ocrdb qw( existsOCR insertOCR );
+use CIHM::Ocrdb qw( existsOCR insertOCR );
+use CIHM::hocrUtils qw( hocr2words );
 use POSIX qw(strftime);
 use IO::Compress::Gzip qw(gzip $GzipError) ;
-use IO::HTML qw(html_file);
-use List::MoreUtils qw(uniq);
 use Graphics::Magick;
 
 use constant { TRUE => 1, FALSE => 0 };
@@ -114,84 +110,7 @@ sub magicBrighten {
 #  <em>I</em>
 # </span>
 
-# get just the text out of the .hocr file, and save it to the .txt file
-sub saveUnformattedText {
-    my ($outHcr, $outTxt) =  @_;
-    # open the HOCR file and sniff the encoding, and apply it. 
-    my $hocrfilehandle = html_file($outHcr); # , \%options);
 
-    # This "shortcut" constructor implicitly calls $new->parse_file(...)
-    my $tree = HTML::TreeBuilder->new_from_file(  $hocrfilehandle);
-
-    # get just the text from the hocr
-    my $formatter = HTML::FormatText->new( leftmargin => 0, rightmargin => 500);
-    my $unformattedtext = $formatter->format($tree);
-
-    my $utf8flag = utf8::is_utf8($unformattedtext);
-    if( ! $utf8flag) {
-	print $logFile "WARN unformattedtext == utf8 == false $outHcr \n";
-    };
-    # write the text file
-    open ( TXTFILE, "> :encoding(UTF-8)", $outTxt) #actually check if it is UTF-8
-	or croak "Cannot open $outTxt: $!";
-
-    print TXTFILE $unformattedtext
-	or croak "Cannot write to $outTxt: $!";
-
-    close (TXTFILE )
-	or croak "Cannot close $outTxt: $!";
-    return $unformattedtext;
-}
-
-# count the words
-sub countWords {
-    my ( $unformattedtext) = @_;
-    # get the text into an array
-    my @dup_list = split(/ /, $unformattedtext);
-    # sort uniq
-    my @uniq_list = uniq(@dup_list);
-    # count words
-    my $nwords = scalar @uniq_list;
-    # put all in a string
-    #my $wordList = join(' ', @uniq_list);  # zzz not used
-    return $nwords;
-}
-
-# save stats to a file
-# each line contains the word confidence followed by the word
-# the last line contains the average word confidence (weighted by word frequency)
-# the return is the average and the number of words
-sub saveStats {
-    my ( $outHcr,  $outStats) = @_;
-    open( STFILE, "> $outStats");
-
-    # get just the x_wconf values from the hocr file:
-    # write to a stats file with a wconf per line
-    my $confsum = 0;
-    my $confcount = 0;
-
-    my $html = HTML::TagParser->new( $outHcr );
-    my @list = $html->getElementsByTagName( "span" );
-    foreach my $elem ( @list ) {
-	my $innertext = $elem->innerText;
-
-	my $titlevalue = $elem->getAttribute( "title" );
-	my $wconf = "none";
-	if ( $titlevalue =~ / x_wconf ([0-9]*)/ ) {
-	    $wconf = $1;
-	    $confsum += $1;
-	    $confcount ++;
-	}
-	print STFILE " $wconf $innertext \n";
-    }
-    # avoid divide by zero
-    if( $confcount == 0) { $confcount ++; }
-    my $avg = $confsum / $confcount;
-
-    print STFILE " $avg average \n";
-    close( STFILE);
-    return ($avg, $confcount) ;
-}
 
 ##############################################
 # Mainline
@@ -216,7 +135,6 @@ if( $help || $input eq "." ) {
     warn "or    $0 --help\n";
     exit 0;
 }
-
 
 my $tessver = `tesseract --version 2>&1`;
 $tessver =~ s/tesseract ([0-9]*.[0-9]*).*/$1/s;
@@ -266,8 +184,6 @@ my $interfilenameNoExt  = $oDir . $base;
 my $interfilename = $oDir . $base . $ext;
            
 my $outHcr   = $interfilename . ".hocr";
-my $outTxt   = $interfilename . ".txt";
-my $outStats = $interfilename . ".stas";
 
 # make output dir
 make_path $oDir;
@@ -278,13 +194,26 @@ my $starttime = time();
 # also, convert any jp2 files to jpg and return the name
 my $ofilename = magicBrighten ( $input, $interfilenameNoExt, $ext, $brightFactor);
 
-# OCR the brightened image, producing a hocr file:
+# OCR the brightened image, producing a .hocr file:
 `tesseract $ofilename $interfilename -l $lang quiet hocr`;
 
+# check that the .hocr file was made
 if ( ! -e  $outHcr) {
     print $logFile "ERROR ===no hcr $outHcr\n";
     exit 0;
 }
+
+# filter the .hocr file
+#zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+
+# check that the .hocr file was made
+if ( ! -e  $outHcr) {
+    print $logFile "ERROR ===no hcr $outHcr\n";
+    exit 0;
+}
+
+# remove the brightened file, which uses lots of disk space
+unlink  $ofilename;
 
 # get the hocr info from the file
 my $inhocr = "";
@@ -305,27 +234,17 @@ if( $utf8flag1) {
     print $logFile "WARN inhocr == utf8 == true \n";
 }
 
-# compress it
+# compress it 
 my $gzhocr = "";
 gzip \$inhocr, \$gzhocr ;
-#gzip \$hocrhtml, \$gzhocr ;
 
-# get just the text out of the .hocr file, and save it to the .txt file
-my $unformattedtext = saveUnformattedText($outHcr, $outTxt);
-
-# count the words
-my $nwords = countWords( $unformattedtext);
-
-# remove the brightened file, which uses lots of disk space
-unlink  $ofilename;
-
-# save the word confidence values
-my ($avgwconf, $nwords2) = saveStats( $outHcr,  $outStats);
-
-print $logFile "INFO nwords unique $nwords all $nwords2  $inBase \n";
+# get some stats and text from the .hocr file
+my ($avgwconf, $nwords, $nwords2, $unformattedtext) = hocr2words( $outHcr);
 
 # remove the hocr file, which uses a bit of disk space
 unlink $outHcr;
+
+print $logFile "INFO nwords unique $nwords all $nwords2  $inBase \n";
 
 # find the size of the input image
 my ($device, $inode, $mode, $nlink, $uid, $gid, $rdev, $imgFileSize,

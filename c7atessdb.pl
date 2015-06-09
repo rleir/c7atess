@@ -9,8 +9,6 @@
 #
 
 use common::sense;
-#use strict;
-#use warnings;
 #use diagnostics;
 
 use Getopt::Long;
@@ -20,7 +18,7 @@ use HTML::Parse;
 use File::Path qw( make_path );
 use File::Basename;
 use Cwd;
-use Ocrdb qw( insertOCR );
+use CIHM::Ocrdb qw( insertOCR );
 #use POSIX qw(strftime);
 use IO::Compress::Gzip qw(gzip $GzipError) ;
 use List::MoreUtils qw(uniq);
