@@ -13,7 +13,7 @@ use strict;
 use warnings;
 use diagnostics;
 use Getopt::Long;
-use Ocrdb qw( existsOCR insertOCR getOCR);
+use CIHM::Ocrdb qw( existsOCR insertOCR getOCR);
 use IO::Compress::Gzip qw(gzip $GzipError) ;
 
 use constant { TRUE => 1, FALSE => 0 };

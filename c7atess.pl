@@ -27,7 +27,7 @@ use Carp;
 use Getopt::Long;
 use Cwd 'abs_path';
 use File::Path qw( make_path );
-#use File::Basename;
+use File::Basename;
 use Cwd;
 use CIHM::Ocrdb qw( existsOCR insertOCR );
 use CIHM::hocrUtils qw( hocr2words );
