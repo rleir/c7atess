@@ -90,6 +90,12 @@ if( $verbose) {
 }
 my $data = abs_path($input);
 
+if( ! $data) {
+    print "inp is null \n";
+    unlock ($token);
+    exit 0;
+}
+
 if( $verbose) {
     print "inp is $data\n";
 }
@@ -131,5 +137,5 @@ if( ! $ocropus) {
 # unlink $LOCK or warn "Could not unlink $LOCK: $!";
 unlock ($token);
 
-exit 0;
+exit 1;
 

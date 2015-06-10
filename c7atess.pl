@@ -135,6 +135,7 @@ if( $help || $input eq "." ) {
     warn "or    $0 --help\n";
     exit 0;
 }
+#print $logFile "WARN inupt $input \n";
 
 my $tessver = `tesseract --version 2>&1`;
 $tessver =~ s/tesseract ([0-9]*.[0-9]*).*/$1/s;
@@ -240,6 +241,9 @@ gzip \$inhocr, \$gzhocr ;
 
 # get some stats and text from the .hocr file
 my ($avgwconf, $nwords, $nwords2, $unformattedtext) = hocr2words( $outHcr);
+if ( ! $unformattedtext) {
+    print $logFile "WARN no hcr output so no text \n";
+}
 
 # remove the hocr file, which uses a bit of disk space
 unlink $outHcr;

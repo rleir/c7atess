@@ -30,6 +30,7 @@ my $result = GetOptions (
 if( $help || $input eq "." ) {
     warn "Usage $0 [--input=indirpath] \n";
     warn "or    $0 --help\n";
+    warn "output: hocr.gz in current dir\n";
     exit 0;
 }
 
@@ -47,6 +48,6 @@ open (OUTFILE, '>hocr.gz');
 print OUTFILE $gzhocr;
 close (OUTFILE);
 
-exit 0;
+exit 1;
 
 

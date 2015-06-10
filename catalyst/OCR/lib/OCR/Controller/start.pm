@@ -30,9 +30,9 @@ sub index :Path :Args(0) {
     $treePath =~ s/^\s+//;
     
     # start a job
-    $collID = system("./c7aocr.pl --input=$treePath --verbose & ");
+    $c->log->debug( "starting  $treePath $collID ") if( $c->log->is_debug);
 
-    $c->log->debug( "started  $treePath $collID ") if( $c->log->is_debug);
+    $collID = system("./c7aocr.pl --input=$treePath --verbose & ");
 
     $c->response->body("treePath $treePath $collID");
 }
