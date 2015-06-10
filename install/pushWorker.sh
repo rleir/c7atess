@@ -26,7 +26,8 @@
 #set -x
 scp ~/ocr/pdfocr/c7atess.pl richard\@$1\:
 
-scp ~/ocr/pdfocr/Ocrdb.pm richard\@$1\:
+scp ~/ocr/pdfocr/CIHM/Ocrdb.pm richard\@$1\:
+scp ~/ocr/pdfocr/CIHM/hocrUtils.pm richard\@$1\:
 
 scp installWorker.sh richard\@$1\:
 

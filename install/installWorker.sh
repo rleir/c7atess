@@ -19,12 +19,18 @@ apt-get -y install libconfig-inifiles-perl
 apt-get -y install libdbi-perl
 apt-get -y install libdbd-mysql-perl
 apt-get -y install libgraphics-magick-perl
+
+apt-get install libxml2-dev
+apt-get install zlib1g-dev
+
 # or perlmagick for ImageMagick
 
 # Install a Perl module from CPAN
 # Cpan: when running cpan for the first time,
 # accept all recommendations
 PERL_MM_USE_DEFAULT=1 cpan -i  HTML::TagParser
+PERL_MM_USE_DEFAULT=1 cpan -i  common::sense
+PERL_MM_USE_DEFAULT=1 cpan -i  XML::LibXML::PrettyPrint
 
 # create config files
 mkdir -p /etc/c7aocr
@@ -70,6 +76,9 @@ ln -s /collections.new/pool1/aip /collections/tdr
 
 echo  "192.168.1.131   arundel " >> /etc/hosts
 
+mkdir           CIHM
+mv Ocrdb.pm     CIHM/
+mv hocrUtils.pm CIHM/
 
 # end
 
