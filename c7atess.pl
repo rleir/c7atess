@@ -30,7 +30,7 @@ use File::Path qw( make_path );
 use File::Basename;
 use Cwd;
 use CIHM::Ocrdb qw( existsOCR insertOCR );
-use CIHM::hocrUtils qw( hocr2words );
+use CIHM::hocrUtils qw( hocr2words doFilterHocr);
 use POSIX qw(strftime);
 use IO::Compress::Gzip qw(gzip $GzipError) ;
 use Graphics::Magick;
@@ -204,15 +204,6 @@ if ( ! -e  $outHcr) {
     exit 0;
 }
 
-# filter the .hocr file
-#zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
-
-# check that the .hocr file was made
-if ( ! -e  $outHcr) {
-    print $logFile "ERROR ===no hcr $outHcr\n";
-    exit 0;
-}
-
 # remove the brightened file, which uses lots of disk space
 unlink  $ofilename;
 
@@ -226,6 +217,8 @@ my $inhocr = "";
     $inhocr = <$hocrFile>;
     close $hocrFile;
 } 
+
+$inhocr = doFilterHocr ( $inhocr);
 
 # The hocr info is stored in a format that is not utf8 because
 # that caused problems in the gzip compression below.
