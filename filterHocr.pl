@@ -50,7 +50,6 @@ my $inhocr;
     $inhocr = <>;
 } 
 
-#zzz refactor some code into hocrUtils.pm
 # zzzz test with  french to check utf8
 $inhocr = doFilterHocr ( $inhocr);
 

@@ -5,7 +5,7 @@
 #   get the word confidence values
 package CIHM::hocrUtils;
 
-#use common::sense;
+use common::sense;
 
 use XML::LibXML;
 use XML::LibXML::PrettyPrint;
@@ -19,7 +19,6 @@ use List::MoreUtils qw(uniq);
 use Encode qw(decode encode);
 
 use Image::Info qw(image_info dim);
-
 
 use vars qw(@ISA @EXPORT @EXPORT_OK $VERSION); #  %EXPORT_TAGS
 use Exporter;
@@ -125,38 +124,42 @@ sub hocr2words {
 # inhocr is a string containing the hocr
 # imgFile is a web relative path to the image
 sub hocr2html {
-    my ( $unfilthocr, $prefix ) =  @_;
+    my ( $unfilthocr, $fontSize ) =  @_;
 
-#        warn "inhocr $inhocr";
+    if( ! $fontSize) {
+        $fontSize = 40;
+    }
+
+    # filter junk. soon this step will not be necessary, 
+    # when we are writing filtered hocrs to the DB,
+    # and when the existing DB records have been filtered.
     my $inhocr = doFilterHocr ( $unfilthocr);
 
     # get input
     my $html = HTML::TagParser->new( $inhocr );
 
-# <div class='ocr_page' id='page_1'
-# title='image "/home/richard/collections.new/pool1/aip/oocihm/768/oocihm.36653/data/sip/data/files/oocihm.36653.0009.tif";
-# bbox 0 0 2390 4143; ppageno 0'>
-
-#image "/var/lib/catalyst/OCR/collections.new/pool1/aip/oocihm/814/oocihm.lac_reel_c1209/data/sip/data/files/0344.jpg";
-# bbox 0 0 4112 5376; ppageno 0
-
-#image "/home/rleir/ocr/pdfocr/collections/tdr/oocihm/887/oocihm.00001/data/sip/data/files/oocihm.00001.0003.tif";
-# bbox 0 0 3029 5173; ppageno 0
-
     my $imgFile;
-    my $absimgFile;
     my @titlelist = $html->getElementsByTagName( "div" );
-    foreach my $elem ( @titlelist ) {
-        my $titlevalue = $elem->getAttribute( "title" );
-        warn "title $titlevalue";
-        # ignore all but the filename
-        my ($fullimgFile) = $titlevalue =~ /image \"(.*)\"; bbox ([0-9]*) ([0-9]*) ([0-9]*) ([0-9]*); ppageno ([0-9]*)/;
-        warn "fullimgFile $fullimgFile";
-        warn "prefix $prefix";
-        ($imgFile) = $fullimgFile =~ /$prefix(.*)/;
-        # warn $imgFile;
-        #$absimagefile = "/
-        last;  # break out of the loop
+    my $elem = $titlelist[0];
+    my $titlevalue = $elem->getAttribute( "title" );
+
+    # ignore all but the filename
+    my ($fullimgFile) = $titlevalue =~ /image \"(.*)\"; bbox ([0-9]*) ([0-9]*) ([0-9]*) ([0-9]*); ppageno ([0-9]*)/;
+    # warn "fullimgFile $fullimgFile";
+
+    my $p1 = $fullimgFile;
+    $p1 =~ s/^\/tdr/\/collections.new\/pool1\/aip/ ;
+    if( -e $p1) {
+        #warn "exists p1 $p1";
+        $imgFile = $p1;
+    } else {
+
+        my $p2 = $fullimgFile;
+        $p2 =~ s/^\/tdr/\/collections.new\/pool2\/aip/ ;
+        if( -e $p2) {
+            #warn "exists p2 $p2";
+            $imgFile = $p2;
+        }
     }
 
     my @list = $html->getElementsByTagName( "span" );
@@ -187,12 +190,12 @@ sub hocr2html {
     <div id= "image" style="position:absolute;z-index:-1">
 ENDHTML
 
-    # tif file?
-    if( $imgFile =~ /.*tif/ ) {
+    # tif file? need to convert to jpg
+    if( $imgFile =~ /.*tif$/ ) {
 
         my $info = image_info( $imgFile);
         if (my $error = $info->{error}) {
-            die "Can't parse image info: $error\n";
+            die "Can't parse image info: $imgFile $error\n";
         }
         #print $info->{BitPerSample};
 
@@ -202,8 +205,8 @@ ENDHTML
     } else {
         $htmlOut .= "<img src='$imgFile' />";
     }
-    $htmlOut .= " </div>";
-    $htmlOut .= "<div id='ocr' style='color:transparent;opacity:0.5;background-color:transparent;'> ";
+    $htmlOut .= " </div> \n";
+    $htmlOut .= "<div id='ocr' style='color:transparent;opacity:0.5;background-color:transparent;'> \n";
 
     foreach my $elem ( @list ) {
         my $classvalue = $elem->getAttribute( "class" );
@@ -232,7 +235,7 @@ ENDHTML
             my $width  = $x1 - $x0;
             my $height = $y1 - $y0;
             $htmlOut .= " <span style='left:${x0}px;top:${y0}px;width:${width}px;height:${height}px;";
-            $htmlOut .= " font-size:10px;position:absolute;'>$innertext</span>\n";
+            $htmlOut .= " font-size:${fontSize}px;position:absolute;'>$innertext</span>\n";
         }
     }
     $htmlOut .= " </div> </body> </html>\n";

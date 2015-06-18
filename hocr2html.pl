@@ -24,13 +24,13 @@ use Data::Dumper;
 
 my $imageFile= "";
 my $outfile= "";
-my $prefix= "\/";
+my $fontSize= "35";
 my $verbose;
 my $help;
 my $result = GetOptions (
                     "imageFile=s" => \$imageFile, # string
                     "outfile=s"   => \$outfile,   # string
-                    "prefix=s"    => \$prefix,    # string
+                    "fontSize=i"  => \$fontSize,  # integer
                     "help"        => \$help,      # flag
                     "verbose"     => \$verbose);  # flag
 
@@ -39,7 +39,7 @@ if( $help ) {
     print "or    $0 < ifilename > ofilename \n";
     print "or    $0 [--imageFile=DBimageSpec] \n";
     print "or    $0 [--outfile=filename] --verbose\n";
-    print "or    $0 [--prefix=path] \n";
+    print "or    $0 [--fontSize=number] \n";
     print "or    $0 --help\n";
     exit 0;
 }
@@ -62,16 +62,14 @@ if( $imageFile eq "") {
     my $status = gunzip \$gzhocr, \$rawhocr 
         or die "gunzip failed: $GunzipError\n";
     $inhocr = $rawhocr ;
-#    $inhocr = decode( 'UTF8', $rawhocr );
-#    $inhocr = encode( 'UTF8', $rawhocr );
 }
 
-my $layerhtml = hocr2html ( $inhocr, $prefix);
+my $layerhtml = hocr2html ( $inhocr, $fontSize);
 
 if( $outfile eq "") {
     print $layerhtml ;
 } else {
-    open my $out, '>:encoding(UTF8)', $outfile;
+    open my $out, '>', $outfile;
     print {$out} $layerhtml;
     close $out;
 }

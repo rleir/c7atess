@@ -28,7 +28,7 @@ sub index :Path :Args(0) {
 
     my $jobpid = "NAJ";
     my $filename = '/var/run/c7aocr/jobpids';
-    if (open(my $fh, '<:encoding(UTF-8)', $filename)) {
+    if (open(my $fh, '<:encoding(UTF8)', $filename)) {
         if ( ! defined($fh) ) {
             warn "YikesCould not open file '$filename' $!";
         } elsif ( my $row = <$fh>) {
