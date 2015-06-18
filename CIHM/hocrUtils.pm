@@ -305,9 +305,9 @@ sub hocr2txtmap {
 
 # doFilterHocr ==================================
 # filter junk out of a .hocr
-# this can be done one or many times with the same result
-# the code is not efficient, but it needs to be correct.
-# when you have time to do the testing, you can optimise this
+#   -this sub can be called one or many times with the same result
+#   -the code is not efficient, but it needs to be correct.
+#   -when you have time to do the testing, you can optimise this
 sub doFilterHocr {
     my ($rawhocr) =  @_;
 
@@ -318,11 +318,16 @@ sub doFilterHocr {
         string => $inhocr
         # parser options ...
         );
+
     onePassFilter ( $doc); # remove any junk words
     onePassFilter ( $doc); # remove any empty lines
     onePassFilter ( $doc); # remove any empty par's
     onePassFilter ( $doc); # remove any empty carea's
-    return( $doc->toString);
+
+    my $trhocr = $doc->toString;
+    my $inhocr = correctPath ( $trhocr); # title image path is incorrect as written by tess
+
+    return( $inhocr);
 }
 
 # Replace ligatures with separate characters
@@ -355,6 +360,34 @@ sub transLigatures {
     return $octets;
 }
 
+# the title image path is incorrect as written by tess
+# note that we assume that libXML has had a pass thru the doc already, so '"' became &quot;
+#    and ''' became '"' in ...
+sub correctPath  {
+    my ($hocr) =  @_;
+
+    # if( $hocr =~ /(div class="ocr_page" id="page_1" title="image \&quot;\/.{22})/ ) { warn $1; }
+
+    # if the correct path is not found
+    my $found = $hocr =~ /div class="ocr_page" id="page_1" title="image \&quot;\/tdr\// ;
+
+    if( ! $found ) {
+        # my ($deb) = $hocr =~ /(div class="ocr_page" id="page_1" title="image .{32})/ ;
+        # warn "correcting path $deb" ;
+
+        # correct this error (from when a worker did the image)
+        $hocr =~ s/\/home\/richard\/collections.new\/pool[12345]\/aip/\/tdr/ ;
+
+        # or correct this error (from when the manager did the image)
+        $hocr =~ s/\/var\/lib\/catalyst\/OCR\/collections.new\/pool[12345]\/aip/\/tdr/ ;
+        
+        # or correct this error (from the first month, long ago)
+        $hocr =~ s/\/home\/rleir\/ocr\/pdfocr\/collections\/tdr/\/tdr/ ;
+    }
+    return $hocr;
+}
+
+# scan all nodes in doc, removing junk
 sub onePassFilter {
     my ($doc) =  @_;
 
