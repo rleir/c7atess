@@ -172,9 +172,6 @@ if( !$matchedIt) {
     exit 0;
 }
 
-# check the DB to see if the item has been processed already with the current engine.
-#if( existsOCR ( $inBase,  $enginePreproDescrip, $lang)) {
-
 # check the DB to see if the item has been processed already with any version of the engine.
 if( existsOCR ( $inBase, undef, $lang)) {
     exit 0; 
@@ -220,6 +217,11 @@ my $inhocr = "";
 
 $inhocr = doFilterHocr ( $inhocr);
 
+# save the filtered hocr to a file for debugging
+# open my $out_fh, '>', $outHcr . "filt.hocr";
+# print {$out_fh} $inhocr;
+# close  $out_fh;
+
 # The hocr info is stored in a format that is not utf8 because
 # that caused problems in the gzip compression below.
 my $utf8flag1 = utf8::is_utf8($inhocr);
@@ -233,9 +235,9 @@ my $gzhocr = "";
 gzip \$inhocr, \$gzhocr ;
 
 # get some stats and text from the .hocr file
-my ($avgwconf, $nwords, $nwords2, $unformattedtext) = hocr2words( $outHcr);
-if ( ! $unformattedtext) {
-    print $logFile "WARN no hcr output so no text \n";
+my ($avgwconf, $nwords, $nwords2, $unformattedtext, $diagnostic) = hocr2words( $outHcr);
+if ( $diagnostic) {
+    print $logFile $diagnostic;
 }
 
 # remove the hocr file, which uses a bit of disk space
