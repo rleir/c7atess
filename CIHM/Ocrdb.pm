@@ -132,21 +132,33 @@ my $SQLget = <<ENDSTAT3;
 SELECT outputHocr
     FROM ocr 
     WHERE imageFile = ?
+      ZZengineSpecZZ
 ORDER BY
     startOcr desc ;
 ENDSTAT3
 
 # get a tuple: the most recent ocr results for a specified image
 sub getOCR {
-    my ( $file ) =  @_;
+    my ( $file, $engine ) =  @_;
+
+    if( $engine) {
+        $SQLget =~ s/ZZengineSpecZZ/ AND ocrEngine = \? / ;
+    } else {
+        $SQLget =~ s/ZZengineSpecZZ// ;
+    }
 
     my $dbh = DBI->connect( "DBI:mysql:database=$dbname;host=$hostname", $username, $password,
 			    {RaiseError => 0, PrintError => 0, mysql_enable_utf8 => 1}
 	)
 	or croak "Could not connect to database: $DBI::errstr" ;
 
-    my $sth = $dbh->prepare($SQLget)   or croak $dbh->errstr;
-    my $rv = $sth->execute( $file)  or croak $sth->errstr;
+    my $sth = $dbh->prepare($SQLget)         or croak $dbh->errstr;
+    my $rv;
+    if( $engine) {
+        $rv = $sth->execute( $file, $engine)  or croak $sth->errstr;
+    } else {
+        $rv = $sth->execute( $file         )  or croak $sth->errstr;
+    }
     my $rows = $sth->rows;
 
     my $row = $sth->fetchrow_hashref;
