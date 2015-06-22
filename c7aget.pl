@@ -1,12 +1,10 @@
 #!/usr/bin/perl
 #
-# check the DB, skip existing
-
-
 # Given a image file specifier,
 # get the hocr from the ocr DB
+# 
 
-# example input path
+# example imageFile DB field:
 # tdr/oocihm/444/oocihm.lac_reel_c8008/data/sip/data/files/1869.jpg
 
 use strict;
@@ -14,7 +12,6 @@ use warnings;
 use diagnostics;
 use Getopt::Long;
 use CIHM::Ocrdb qw( existsOCR insertOCR getOCR);
-#use IO::Compress::Gzip qw(gzip $GzipError) ;
 
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError) ;
 
@@ -35,7 +32,7 @@ my $result = GetOptions (
                     "engine=s"  => \$engine,     # string
                     "help"      => \$help);  # flag
 if( $help || $input eq "." ) {
-    print "Usage $0 [--input=indirpath] [--engine=eng-spec] \n";
+    print "Usage $0 [--input=imageFile-DB-field] [--engine=ocrEngine-DB-field] \n";
     print "or    $0 --help\n";
     print "engine defaults to wildcard, and the most recent .hocr is returned \n";
     print "output: hocr.gz in current dir\n";
