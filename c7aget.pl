@@ -16,7 +16,6 @@ use CIHM::Ocrdb qw( existsOCR insertOCR getOCR);
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError) ;
 
 use constant { TRUE => 1, FALSE => 0 };
-my $logFile;
 
 ##############################################
 # Mainline
@@ -39,10 +38,6 @@ if( $help || $input eq "." ) {
     print "or    $0 [--outfile=filename] \n";
     exit 0;
 }
-
-open($logFile, '>>', "/tmp/testtesspho.log")
-    || die "LOG open failed: $!";
-my $oldfh = select($logFile); $| = 1; select($oldfh);
 
 # check the DB to get the item
 my $gzhocr = getOCR( $input, $engine);
