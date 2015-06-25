@@ -26,7 +26,7 @@
 #set -x
 scp DoImage.pl richard\@$1\:
 
-scp -r CIHM/ richard\@$1\:
+scp -r OCR/ richard\@$1\:
 
 scp installWorker.sh richard\@$1\:
 
