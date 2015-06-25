@@ -115,7 +115,7 @@ my $fileTypes  = " -name \\*.jpg -o -name \\*.jp2 -o -name \\*.tif ";
 my $serverList = " -S richard\\\@darcy-pc -S richard\\\@yb -S richard\\\@xynotyro -S richard\\\@aragon -S richard\\\@zamorano -S : --sshdelay 0.2 ";
 
 # The slave job OCR's an image, and stores the results.
-my $slaveJob   = " ./c7atess.pl --input={} --lang=$lang --verbose ";
+my $slaveJob   = " ./DoImage.pl --input={} --lang=$lang --verbose ";
 
 # avoid doing the revision directories, just the sip dirs.
 my $prune      = " -path /\\*/revisions -prune -o ";
