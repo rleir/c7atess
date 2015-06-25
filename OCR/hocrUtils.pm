@@ -3,7 +3,7 @@
 #   get just the text words,
 #   count the words
 #   get the word confidence values
-package CIHM::hocrUtils;
+package OCR::hocrUtils;
 
 use common::sense;
 

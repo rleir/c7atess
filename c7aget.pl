@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use diagnostics;
 use Getopt::Long;
-use CIHM::Ocrdb qw( existsOCR insertOCR getOCR);
+use OCR::Ocrdb qw( existsOCR insertOCR getOCR);
 
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError) ;
 

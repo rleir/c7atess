@@ -1,7 +1,7 @@
 # DB access for the ocr table
 #   for insert, check record
 
-package CIHM::Ocrdb;
+package OCR::Ocrdb;
 
 use common::sense;
 #use strict;
