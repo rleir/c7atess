@@ -1,20 +1,23 @@
 #!/usr/bin/perl
 #
-# driven by find from the tdr
-# check the DB, skip existing
-# brighten
-# ocr
-# stats
-# to DB
-
 # Given a image file (jpeg, jpeg2000, png and tif),
 # run OCR on it, generating xml, text, stats, and concordance.
+
+# Steps:
+#  - check the DB, skip existing
+#  - preprocess the image
+#  - run Tesseract or Ocropus or..
+#  - make word stats
+#  - save to DB
 #
-# The output directory is in a local tree that mirrors the tdr.
-# The directory will be created if it does not already exist.
-# Before doing OCR, brighten the input image as necessary.
+# Temp files were saved to a local tree that mirrors the tdr (change this!)
+#             The directory will be created if it does not already exist.
 #
-# This program is run in parallel on several servers, one instance per core.
+# Before doing OCR, process the input image with 'adaptive thresholding':
+#    we need the image to appear like a photocopy so that Tesseract's binarization
+#    will be effective, though the source image might have uneven lighting and minor noise.
+#
+# This program is intended to be run in parallel on several servers, one instance per core.
 
 #use common::sense;
 use strict;
@@ -117,11 +120,11 @@ sub magicBrighten {
 #
 my $input  = ".";
 my $lang   = "eng";
-my $brightFactor = "99";
-my $ocropus;
+my $brightFactor = "99"; # obsolete
+my $ocropus; # future
 my $verbose;
 my $help;
-my $keep = FALSE;
+my $keep = FALSE; # obsolete
 my $result = GetOptions (
                     "input=s"   => \$input,     # string
                     "lang=s"    => \$lang,      # string
@@ -138,9 +141,15 @@ if( $help || $input eq "." ) {
 #print $logFile "WARN inupt $input \n";
 
 my $tessver = `tesseract --version 2>&1`;
+# the output is in the form of
+#   tesseract 3.03
+#    leptonica-1.71
+#     libjpeg 8d : libpng 1.2.51 : libtiff 4.0.3 : zlib 1.2.8
+#
+# we want just the version ie 3.03:
 $tessver =~ s/tesseract ([0-9]*.[0-9]*).*/$1/s;
 
-# This is saved in the DB ocrEngine field
+# The following gets saved in the DB ocrEngine field
 my $enginePreproDescrip = "tess${tessver}-IMdivide";
 
 open($logFile, '>>', "/var/log/c7aocr/testtesspho.log")
