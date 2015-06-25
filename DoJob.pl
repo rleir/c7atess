@@ -5,7 +5,7 @@
 # The results are put in the ocr database.
 # Automatically uses all cores of the servers in parallel.
 # The input directory can actually be anything that find(1) accepts, perhaps with wildcards, such as 
-#     ./c7aocr.pl --input=/collections/tdr/oocihm/8* 
+#     ./DoJob.pl --input=/collections/tdr/oocihm/8* 
 # Note: currently the input path needs to be absolute IE /coll/tdr/oo.. or the prune clause will be ineffective.
 
 # Option lang: instructs Tesseract to use the specified language dictionary
@@ -47,7 +47,7 @@ use File::Basename;
 
 my $base0 = basename $0;
 
-my $LOCK = "/var/run/c7aocr/.lock-$base0";
+my $LOCK = "/var/run/DoJob/.lock-$base0";
 
 sub take_lock {
     open my $fh, ">", $LOCK or die "$base0: open $LOCK: $!";
@@ -133,7 +133,7 @@ if( ! $ocropus) {
 
 }
 
-# rm /var/run/c7aocr/.lock-c7aocrtest.pl
+# rm /var/run/DoJob/.lock-DoJobtest.pl
 # unlink $LOCK or warn "Could not unlink $LOCK: $!";
 unlock ($token);
 

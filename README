@@ -2,9 +2,9 @@ Run script/ocr_server.pl to test the application.
 
 Installation:
   Some scripts from canadiana/trunk/ocr/ need to be copied into this top catalyst directory:
-    c7aocr.pl
+    DoJob.pl
     c7atess.pl
-    Ocrdb.pm
+    CIHM/Ocrdb.pm
 
 There needs to be a directory /var/run/c7aocr which is writeable by the user running this cat app.
 
