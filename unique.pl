@@ -2,9 +2,9 @@
 #
 # for all DB recs in input, de-duplicate
 # read in a flat file created with 
-#   mysql -e "select idocr, imageFile, count(*) as ct from ocr group by imageFile HAVING ct > 1;" > nonunique.d
-#
-# sample:
+#   mysql -e "SELECT idocr, imageFile, count(*) AS ct FROM ocr GROUP BY imageFile HAVING ct > 1 ;" > nonunique.d
+
+# sample data:
 # 103513	oocihm/003/oocihm.39229/data/sip/data/files/oocihm.39229.10.jp2	2
 # 103531	oocihm/003/oocihm.39229/data/sip/data/files/oocihm.39229.11.jp2	2
 
@@ -51,6 +51,7 @@ while (my $line = <$data>) {
     print "$id $imageFile $count \n";
 
     # note: $count comes from the input, then changes to the DB count
+    # note: as a result, there is a bug, the loop completes but not in a clean way
     while( $count > 1) {
 
         # count what is currently in the DB
