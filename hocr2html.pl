@@ -8,8 +8,8 @@
 # Input can be from the DB, given an imageFile name
 #
 use common::sense;
-use CIHM::hocrUtils qw( hocr2html );
-use CIHM::Ocrdb qw( getOCR );
+use OCR::hocrUtils qw( hocr2html );
+use OCR::Ocrdb qw( getOCR );
 
 #use IO::Compress::Gzip qw(gzip $GzipError) ;
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError) ;

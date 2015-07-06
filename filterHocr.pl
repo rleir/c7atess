@@ -14,7 +14,7 @@ use common::sense;
 use XML::LibXML;
 #use XML::LibXML::PrettyPrint;
 #use diagnostics;
-use CIHM::hocrUtils qw( doFilterHocr);
+use OCR::hocrUtils qw( doFilterHocr);
 
 # do not use open qw/:std :utf8/;
 # http://stackoverflow.com/questions/21096900/how-do-i-avoid-double-utf-8-encoding-in-xmllibxml

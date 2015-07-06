@@ -47,7 +47,7 @@ use File::Basename;
 
 my $base0 = basename $0;
 
-my $LOCK = "/var/run/DoJob/.lock-$base0";
+my $LOCK = "/var/run/ocr/.lock-$base0";
 
 sub take_lock {
     open my $fh, ">", $LOCK or die "$base0: open $LOCK: $!";
@@ -133,7 +133,7 @@ if( ! $ocropus) {
 
 }
 
-# rm /var/run/DoJob/.lock-DoJobtest.pl
+# rm /var/run/ocr/.lock-DoJobtest.pl
 # unlink $LOCK or warn "Could not unlink $LOCK: $!";
 unlock ($token);
 

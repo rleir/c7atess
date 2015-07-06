@@ -152,7 +152,7 @@ $tessver =~ s/tesseract ([0-9]*.[0-9]*).*/$1/s;
 # The following gets saved in the DB ocrEngine field
 my $enginePreproDescrip = "tess${tessver}-IMdivide";
 
-open($logFile, '>>', "/var/log/c7aocr/testtesspho.log")
+open($logFile, '>>', "/var/log/ocr/testtesspho.log")
     || croak "LOG open failed: $!";
 my $oldfh = select($logFile); $| = 1; select($oldfh);
 

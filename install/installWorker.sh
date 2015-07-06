@@ -3,7 +3,7 @@
 #
 # Installs an OCR worker server. 
 # Copies programs to the server, and installs packages there.
-# Future: a new c7aocr user account, not richard
+# Future: a new ocr user account, not richard
 # Future: do this all with Puppet.
 
 # Install Ubuntu 14.04 packages
@@ -33,8 +33,8 @@ PERL_MM_USE_DEFAULT=1 cpan -i  common::sense
 PERL_MM_USE_DEFAULT=1 cpan -i  XML::LibXML::PrettyPrint
 
 # create config files
-mkdir -p /etc/c7aocr
-cat > /etc/c7aocr/tessdb.ini <<EOF
+mkdir -p /etc/ocr
+cat > /etc/ocr/db.ini <<EOF
 [DBconn]
 hostname=yb.office.c7a.ca
 dbname=ocrResults
@@ -47,10 +47,10 @@ tablename=ocr
 EOF
 
 # Logfile rotation
-mkdir /var/log/c7aocr
-chown richard /var/log/c7aocr
-cat > /etc/logrotate.d/c7aocr <<EOF
-/var/log/c7aocr/*.log {
+mkdir /var/log/ocr
+chown richard /var/log/ocr
+cat > /etc/logrotate.d/ocr <<EOF
+/var/log/ocr/*.log {
 	daily
 	missingok
 	rotate 52
@@ -75,10 +75,6 @@ mount /collections.new/pool2
 ln -s /collections.new/pool1/aip /collections/tdr
 
 echo  "192.168.1.131   arundel " >> /etc/hosts
-
-mkdir           CIHM
-mv Ocrdb.pm     CIHM/
-mv hocrUtils.pm CIHM/
 
 # end
 
