@@ -23,12 +23,12 @@ Catalyst Controller.
 
 sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
-    my $dirpath = `ps a -o etime,pid,cmd  | grep c7aocr.pl | grep -v grep `;
+    my $dirpath = `ps a -o etime,pid,cmd  | grep DoJob.pl | grep -v grep `;
     my $jobpid = 'none';
     if( $dirpath =~ m{ (\d+) } ) {
         $jobpid = $1;
     }
-    `echo $jobpid > /var/run/c7aocr/jobpids`;
+    `echo $jobpid > /var/run/ocr/jobpids`;
 
     $c->response->body( $dirpath );
 }

@@ -27,7 +27,7 @@ sub index :Path :Args(0) {
     my $sigName = $c->request->body_data->{"sigName"} // '';
 
     my $jobpid = 'none';
-    $jobpid = `cat /var/run/c7aocr/jobpids`;
+    $jobpid = `cat /var/run/ocr/jobpids`;
     $c->log->debug( "params $sigName $jobpid ") if( $c->log->is_debug);
 
     my $rslt = "try again";

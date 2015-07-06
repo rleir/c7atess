@@ -14,6 +14,20 @@ OCR::Controller::stop - Catalyst Controller
 
 Catalyst Controller.
 
+the proces and children are :
+
+15026 11721 pts/21 00:00:00 /usr/bin/perl ./DoJob.pl --input=/collections.new/pool1/aip/oocihm/87? --verbose
+
+15027 15026 pts/21 00:00:00 sh -c find /collections.new/pool1/aip/oocihm/87?  -path /\*/revisions -prune -o   -name \*.jpg -o -name \*.jp2 -o -name \*.tif  | parallel -S : ./DoImage.pl --input={} --lang=eng
+
+15029 15027 pts/21 00:03:25 perl /usr/bin/parallel -S : ./DoImage.pl --input={} --lang=eng
+
+ 7048 15029 pts/21 00:00:01 /usr/bin/perl ./DoImage.pl --input=/collections.new/pool1/aip/oocihm/874/oocihm.98988/data/sip/data/files/oocihm.98988.0205.tif --lang=eng
+
+We need to send a Term to parallel 15029 which will stop creating DoImage's.
+
+And maybe kill find 15027
+
 =head1 METHODS
 
 =cut
@@ -27,7 +41,7 @@ sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
 
     my $jobpid = "NAJ";
-    my $filename = '/var/run/c7aocr/jobpids';
+    my $filename = '/var/run/ocr/jobpids';
     if (open(my $fh, '<:encoding(UTF8)', $filename)) {
         if ( ! defined($fh) ) {
             warn "YikesCould not open file '$filename' $!";
@@ -50,7 +64,7 @@ sub index :Path :Args(0) {
     # Second, work from grandchild to parent.
     # If there is agreement on the PID for gnu parallel, then send it a TERM to shut all down gently.
 
-    # find the bin/sh which is the child of our c7aocr job?
+    # find the bin/sh which is the child of our ocr job?
     my $child  = childProc("sh\ -c\ find", $jobpid);
     if( !looks_like_number($child )) {
         $c->response->body("not number2 $child  ");
@@ -58,7 +72,7 @@ sub index :Path :Args(0) {
     }
     my $parPID = childProc("perl\ /usr/bin/parallel", $child);
 
-    # Second, which process named 'parallel' is the child of the child of our c7aocr job?
+    # Second, which process named 'parallel' is the child of the child of our ocr job?
     # The answer should be unique.
     # Find parent pids of parallel processes:
     my $procs_ref = parentPID( "bin/parallel");
@@ -86,7 +100,7 @@ sub index :Path :Args(0) {
     $c->response->body("killed $jobpid ==ps== $deb ");
 }
 
-# find the bin/sh which is the child of our c7aocr job?
+# find the bin/sh which is the child of our ocr job?
 sub childProc {
     my ( $cmd, $jobpid) = @_;
 

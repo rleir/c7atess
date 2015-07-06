@@ -35,7 +35,7 @@ sub index :Path :Args(0) {
     # initialize to none.
     # when a job(s) is running, this file will contain a PID
     my $jobpid = 'none';
-    `cat $jobpid > /var/run/c7aocr/jobpids`;
+    `cat $jobpid > /var/run/ocr/jobpids`;
 
     my $file_path =  'root/tasks.html';
     $c->serve_static_file($file_path);

@@ -25,7 +25,7 @@ sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
 
     my $logLine = "empty";
-    $logLine = `tail -n 1  /var/log/c7aocr/testtesspho.log`;
+    $logLine = `tail -n 1  /var/log/ocr/testtesspho.log`;
     $c->response->body( $logLine );
 }
 
