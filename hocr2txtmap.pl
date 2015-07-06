@@ -8,7 +8,7 @@
 # http://www.canadiana.ca/schema/2012/xsd/txtmap/txtmap.xsd
 #
 use common::sense;
-use CIHM::hocrUtils qw( hocr2txtmap);
+use OCR::hocrUtils qw( hocr2txtmap);
 
 use diagnostics;
 

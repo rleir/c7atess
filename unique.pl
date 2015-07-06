@@ -17,7 +17,7 @@ use Config::IniFiles;
 use Carp;
 use Data::Dumper;
 
-my $cfg = Config::IniFiles->new( -file => "/etc/c7aocr/tessdb.ini" );
+my $cfg = Config::IniFiles->new( -file => "/etc/ocr/db.ini" );
 my $username = $cfg->val( 'DBconn', 'username' ) ;
 my $password = $cfg->val( 'DBconn', 'password' ) ;
 my $hostname = $cfg->val( 'DBconn', 'hostname' ) ;
