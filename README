@@ -1,52 +1,25 @@
-I have been installing the Catalyst app in /var/lib/catalyst/ocr.  
+Purpose:
+   Run Optical Character Recognition on millions of images,
+   using multiple machines and saving the results in a DB for analysis and other uses.
 
-Installation:
-  Some scripts need to be copied into the top catalyst directory:
-    DoJob.pl
-    DoImage.pl
-    CIHM/Ocrdb.pm
-    CIHM/hocrUtils.pm
-    root/*
-    lib/*
-    inc/*
-    ocr.conf
+Contributing: 
+   pull the project, and ..
 
-To start the web control panel, run (if you want to use port 3333)
-  ./script/ocr_server.pl -p3333 --verbose --debug
+Project:
+   Github and CPAN
+   
+Discussion:
+   https://groups.google.com/forum/#!forum/tesseract-ocr
 
-Note: the above should be launched using a service, in the scope of a ocr-data user account.
-Note: Installation of the master needs to be automated:
-   There needs to be a directory /var/run/c7aocr which is writeable by the user running this cat app.
-   There needs to be a config file for the DB: /etc/c7aocr/tessdb.ini  or move it all into ocr.conf.
-   There needs to be a directory /var/log/c7aocr/ 
-   There needs to be a config file /etc/logrotate.d/c7aocr
+To Do:
+  -add to this To Do list, or elaborate on it
+  -the server should be launched using a service, in the scope of a ocr-data user account.
 
-Note: many CPAN modules need to be installed. When you do this, please would you note the cpanm commands
-   needed and contribute this to the project?  For master and slave. And note your Linux distro.
+  -Installation of the master needs to be automated:
+   There needs to be a directory /var/run/ocr which is writeable by the user running this cat app.
+   There needs to be a config file for the DB: /etc/ocr/db.ini  or move it all into ocr.conf.
+   There needs to be a directory /var/log/ocr/ 
+   There needs to be a config file /etc/logrotate.d/ocr
+  
+  -pluggable OCR engine and image preprocessing
 
-Installation on a worker slave is by installWorker.sh.
-This is pushed to a worker by pushWorker.sh
-
-In /etc/c7aocr/tessdb.ini, normally we have 
-  [DBconn]
-  hostname=quark.office.c7a.ca
-
-or 
-  [DBconn]
-  hostname=yb.office.c7a.ca
-
-However, in the special case where the OCR database machine is also an OCR slave machine, we need:
-  [DBconn]
-  hostname=localmysql
-
-Slave log dir: The installation created a directory /var/log/c7aocr/ in each slave computer
- which is writeable by the user running this cat app. Log rotation on this is in 
- /etc/logrotate.d/c7aocr (correct the user,group). With log rotation, it becomes
- easy to compare the performance of the slave computers.
-
-/var/log/c7aocr/*.log {
-	daily
-	missingok
-	rotate 52
-	create 644 richard adm
-}
