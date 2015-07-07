@@ -1,25 +1,37 @@
 Purpose:
    Run Optical Character Recognition on millions of images,
    using multiple machines and saving the results in a DB for analysis and other uses.
+   
+   This project is also useful for the image preprocessing, to get better results from Tesseract.
 
-Contributing: 
-   pull the project, and ..
+   This project is also useful for other CPU intensive tasks that can be run in parallel on machines.
 
 Project:
-   Github and CPAN
+   Github soon, and CPAN
+
+Contributing: 
+   pull the project, and discuss ..
    
 Discussion:
    https://groups.google.com/forum/#!forum/tesseract-ocr
 
+License: 
+   Perl Artistic http://dev.perl.org/licenses/artistic.html
+
 To Do:
-  -add to this To Do list, or elaborate on it
+  -add your plans to this To Do list, or elaborate on it
   -the server should be launched using a service, in the scope of a ocr-data user account.
 
-  -Installation of the master needs to be automated:
+  -Installation of the master needs to be automated, beyond what is done by installWorker.sh:
    There needs to be a directory /var/run/ocr which is writeable by the user running this cat app.
-   There needs to be a config file for the DB: /etc/ocr/db.ini  or move it all into ocr.conf.
-   There needs to be a directory /var/log/ocr/ 
-   There needs to be a config file /etc/logrotate.d/ocr
   
   -pluggable OCR engine and image preprocessing
+
+
+Contributors
+  richard.leir@canadiana.ca
+  russell@ (withheld)
+  tim@ (withheld)
+
+==========================
 
