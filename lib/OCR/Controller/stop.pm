@@ -64,7 +64,7 @@ sub index :Path :Args(0) {
     # Second, work from grandchild to parent.
     # If there is agreement on the PID for gnu parallel, then send it a TERM to shut all down gently.
 
-    # find the bin/sh which is the child of our ocr job?
+    # find the bin/sh which is the child of our DoJob job?
     my $child  = childProc("sh\ -c\ find", $jobpid);
     if( !looks_like_number($child )) {
         $c->response->body("not number2 $child  ");
@@ -72,7 +72,7 @@ sub index :Path :Args(0) {
     }
     my $parPID = childProc("perl\ /usr/bin/parallel", $child);
 
-    # Second, which process named 'parallel' is the child of the child of our ocr job?
+    # Second, which process named 'parallel' is the child of the child of our DoJob job?
     # The answer should be unique.
     # Find parent pids of parallel processes:
     my $procs_ref = parentPID( "bin/parallel");
@@ -100,7 +100,7 @@ sub index :Path :Args(0) {
     $c->response->body("killed $jobpid ==ps== $deb ");
 }
 
-# find the bin/sh which is the child of our ocr job?
+# find the bin/sh which is the child of our DoJob job?
 sub childProc {
     my ( $cmd, $jobpid) = @_;
 

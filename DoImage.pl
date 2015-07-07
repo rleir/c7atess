@@ -152,7 +152,7 @@ $tessver =~ s/tesseract ([0-9]*.[0-9]*).*/$1/s;
 # The following gets saved in the DB ocrEngine field
 my $enginePreproDescrip = "tess${tessver}-IMdivide";
 
-open($logFile, '>>', "/var/log/ocr/testtesspho.log")
+open($logFile, '>>', "/var/log/ocr/DoImage.log")
     || croak "LOG open failed: $!";
 my $oldfh = select($logFile); $| = 1; select($oldfh);
 
@@ -245,6 +245,7 @@ gzip \$inhocr, \$gzhocr ;
 
 # get some stats and text from the .hocr file
 my ($avgwconf, $nwords, $nwords2, $unformattedtext, $diagnostic) = hocr2words( $outHcr);
+
 if ( $diagnostic) {
     print $logFile $diagnostic;
 }

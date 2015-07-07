@@ -133,7 +133,7 @@ if( ! $ocropus) {
 
 }
 
-# rm /var/run/ocr/.lock-DoJobtest.pl
+# rm /var/run/ocr/.lock-$base0";
 # unlink $LOCK or warn "Could not unlink $LOCK: $!";
 unlock ($token);
 
