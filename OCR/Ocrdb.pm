@@ -20,7 +20,7 @@ use vars qw(@ISA @EXPORT @EXPORT_OK $VERSION); #  %EXPORT_TAGS
 use Exporter;
 $VERSION = 0.98;
 @ISA = qw(Exporter);
-@EXPORT = qw( existsOCR insertOCR getOCR);
+@EXPORT = qw( existsOCR insertOCR getOCR pushOCRjob getOCRjob doneOCRjob);
 
 my $logFile;
 
@@ -57,8 +57,6 @@ AND
 ENDSTAT11
 #AND
 #    brightness = ?
-
-
 
 # check for the existence of a tuple
 sub existsOCR {
@@ -166,6 +164,89 @@ sub getOCR {
     $dbh->disconnect();
 
     return @$row{'ocr','outputHocr'};
+}
+
+# Push the OCR job to the queue
+my $SQLpushJob = <<ENDSTAT5;
+INSERT INTO jobQueue 
+( 
+  queuedBy, 
+  priority,
+  notify,
+  parm1,
+  Command,
+  qDateTime,
+  parm2
+)
+VALUES
+( 
+ ?, ?, ?, ?, ?, FROM_UNIXTIME( ?), ?
+);
+ENDSTAT5
+sub pushOCRjob {
+    my ( $qb, $pri, $notif, $parm1, $cmd, $starttime, $parm2 ) =  @_;
+    my $dbh = DBI->connect( "DBI:mysql:database=$dbname;host=$hostname", $username, $password,
+			    {RaiseError => 0, PrintError => 0, mysql_enable_utf8 => 1}
+	)
+	or croak "Could not connect to database: $DBI::errstr" ;
+
+    my $sth = $dbh->prepare($SQLpushJob)         or croak $dbh->errstr;
+    my $rv = $sth->execute( $qb, $pri, $notif, $parm1, $cmd, $starttime, $parm2) or croak $sth->errstr;
+    my $rows = $sth->rows;
+
+    my $row = $sth->fetchrow_hashref;
+    $sth->finish;
+    $dbh->disconnect();
+
+}
+
+# Get the OCR job with the highest pri and head of queue
+my $SQLgetJob = <<ENDSTAT4;
+SELECT idjobQueue, Command, parm1, parm2, notify, priority, qDateTime
+    FROM jobQueue 
+ORDER BY
+    priority ASC, qDateTime ASC
+LIMIT 1 ;
+ENDSTAT4
+
+sub getOCRjob {
+    my ( $ssx ) =  @_;
+    my $dbh = DBI->connect( "DBI:mysql:database=$dbname;host=$hostname", $username, $password,
+			    {RaiseError => 0, PrintError => 0, mysql_enable_utf8 => 1}
+	)
+	or croak "Could not connect to database: $DBI::errstr" ;
+
+    my $sth = $dbh->prepare($SQLgetJob)         or croak $dbh->errstr;
+    my $rv = $sth->execute( )  or croak $sth->errstr;
+    my $rows = $sth->rows;
+
+    my $row = $sth->fetchrow_hashref;
+    $sth->finish;
+    $dbh->disconnect();
+
+    return @$row{'jobQueue', 'idjobQueue', 'Command', 'parm1', 'parm2', 'notify'};
+}
+
+# remove the OCR job from the queue
+my $SQLdoneJob = <<ENDSTAT6;
+DELETE
+FROM jobQueue 
+WHERE idjobQueue = ?
+;
+ENDSTAT6
+
+sub doneOCRjob {
+    my ( $id ) =  @_;
+    my $dbh = DBI->connect( "DBI:mysql:database=$dbname;host=$hostname", $username, $password,
+			    {RaiseError => 0, PrintError => 0, mysql_enable_utf8 => 1}
+	)
+	or croak "Could not connect to database: $DBI::errstr" ;
+
+    my $sth = $dbh->prepare($SQLdoneJob)         or croak $dbh->errstr;
+    my $rv = $sth->execute( $id)  or croak $sth->errstr;
+
+    $sth->finish;
+    $dbh->disconnect();
 }
 
 1;
