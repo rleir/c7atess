@@ -4,7 +4,7 @@ Purpose:
    
    This project is also useful for the image preprocessing, to get better results from Tesseract.
 
-   This project is also useful for other CPU intensive tasks that can be run in parallel on machines.
+   This project is also useful for CPU intensive tasks other than OCR that can be run in parallel on machines.
 
 Project:
    Github soon, and CPAN
@@ -12,8 +12,10 @@ Project:
 Contributing: 
    pull the project, and discuss ..
    
-Discussion:
+Discussion now:
    https://groups.google.com/forum/#!forum/tesseract-ocr
+Discussion future:
+   Github forum
 
 License: 
    Perl Artistic http://dev.perl.org/licenses/artistic.html
@@ -26,7 +28,7 @@ To Do:
    There needs to be a directory /var/run/ocr which is writeable by the user running this cat app.
   
   -pluggable OCR engine and image preprocessing
-
+  -bundle the CPAN modules for automated installation
 
 Contributors
   richard.leir@canadiana.ca
