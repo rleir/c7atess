@@ -21,6 +21,9 @@ Check that you have all needed modules by saying './DoJob.pl' with no parameters
 
 Install needed modules:
   sudo cpanm Getopt::Long
+  sudo cpanm File::Touch
+  sudo cpanm Email::Sender::Simple
+  ++
 
 If you have not installed cpanm, look at https://github.com/miyagawa/cpanminus
 Quickstart: Run the following command to install it
