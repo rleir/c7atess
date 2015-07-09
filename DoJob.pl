@@ -150,8 +150,8 @@ if( $stopScheduler) {
             # if( ! $ocropus) {
 
             # do slave jobs in parallel 
-            print "dummy find $data $prune $fileTypes | parallel $serverList $command \n";
- #           `find $data $prune $fileTypes | parallel $serverList $command `;
+            print "find $data $prune $fileTypes | parallel $serverList $command \n";
+            `find $data $prune $fileTypes | parallel $serverList $command `;
             
             doneOCRjob( $idjobQueue); # in the db, mark it finished (just delete it);
 

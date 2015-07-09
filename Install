@@ -11,7 +11,12 @@ Installation:
     inc/*
     ocr.conf
 
+To start the Scheduler, run
+  cd /var/lib/catalyst/OCR ; \
+  ./DoJob.pl --startScheduler ; \
+
 To start the web control panel, run (if you want to use port 3333)
+  cd /var/lib/catalyst/OCR ; \
   ./script/ocr_server.pl -p3333 --verbose --debug
 
 Note: 

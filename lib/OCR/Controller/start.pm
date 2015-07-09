@@ -1,6 +1,7 @@
 package OCR::Controller::start;
 use Moose;
 use namespace::autoclean;
+use OCR::Ocrdb qw( pushOCRjob );
 
 BEGIN { extends 'Catalyst::Controller'; }
 
@@ -25,6 +26,7 @@ sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
     my $treePath = $c->request->body_data->{"treePath"} // '';
     my $collID   = $c->request->body_data->{"collID"}   // '';
+    my $starttime = time();
 
     # remove any leading spaces
     $treePath =~ s/^\s+//;
@@ -32,7 +34,14 @@ sub index :Path :Args(0) {
     # start a job
     $c->log->debug( "starting  $treePath $collID ") if( $c->log->is_debug);
 
-    $collID = system("./DoJob.pl --input=$treePath --verbose & ");
+#    $collID = system("./DoJob.pl --input=$treePath --verbose & ");
+    my $ret = pushOCRjob( "Dashboard", 
+                          5, 
+                          'richard@c7a.ca',  # this should come from the form
+                          $treePath, 
+                          " ./DoImage.pl --input={} --lang=eng --verbose ", 
+                          $starttime,
+                          $collID );
 
     $c->response->body("treePath $treePath $collID");
 }

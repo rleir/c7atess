@@ -18,7 +18,8 @@ Interface
 
 Engine
    The scheduler accepts a job from the queue, traverses the directory tree, and sends per-image tasks to
-   the workers so as to keep them optimally busy. Each worker pre-processes an image for adaptive thresholding,
+   the workers so as to keep them optimally busy. Image format is JPG, JP2, and Tiff.  Each worker pre-processes
+   an image for adaptive thresholding,
    runs Tesseract, filters junk from the output, then saves the results to the OCR DB.
    The results include a .hocr file, raw text, and some statistics.
 
