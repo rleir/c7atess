@@ -103,18 +103,15 @@ sub hocr2words {
     my ($unformattedtext, $diagnostic) = getUnformattedText($outHcr);
 
     if ( ! $diagnostic) { # should be throwing exceptions instead of this 
-
-            if ( ! $unformattedtext) {
-                $diagnostic = "WARN no unformatted text \n";
-            } else {
-
-                # count the words
-                $nwords = countWords( $unformattedtext);
-            }
-            # save the word confidence values
-            ($avgwconf, $nwords2) = saveStats( $outHcr);
+        if ( ! $unformattedtext) {
+            $diagnostic = "WARN no unformatted text \n";
+        } else {
+            # count the words
+            $nwords = countWords( $unformattedtext);
+        }
+        # save the word confidence values
+        ($avgwconf, $nwords2) = saveStats( $outHcr);
     }
-
     return ($avgwconf, $nwords, $nwords2, $unformattedtext, $diagnostic);
 }
 
