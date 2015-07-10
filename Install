@@ -41,11 +41,17 @@ This is pushed to a worker machine by pushWorker.sh.
 The master machine can also be a worker, so run installWorker.sh there too.
 
 
-DB config:
+DataBase config:
+
+Mysql needs to be configured by saying something like:
+ $ mysql -hsnap -Dmydb -uocruser -p < ocrResults.sql
+
+This assumes the MySQL server is on the host 'snap', and the user 'ocruser' has table create privileges.
+There is friendly MySQL help at https://codex.wordpress.org/Installing_WordPress#Using_the_MySQL_Client
 
 In /etc/ocr/db.ini, normally we have 
   [DBconn]
-  hostname=quark.example.org
+  hostname=snap.example.org
 
 or 
   [DBconn]
@@ -54,6 +60,8 @@ or
 However, in the special case where the OCR database machine is also an OCR worker machine, we need:
   [DBconn]
   hostname=localmysql
+
+
 
 Worker log dir: The installation created a directory /var/log/ocr/ in each worker machine
  which is writeable by the user running this cat app. Log rotation on this is in 
