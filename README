@@ -108,7 +108,8 @@ License:
 
 To Do:
   -add your plans to this To Do list, or elaborate on it
-  -the server should be launched using a service, in the scope of a ocr-data user account.
+  -the Scheduler should be launched using a service, in the scope of a ocr-data user account. 
+   Or there could be a control on the Dashboard to launch and stop it.
 
   -Installation of the master needs to be automated, beyond what is done by installWorker.sh:
    There needs to be a directory /var/run/ocr which is writeable by the user running this cat app.
