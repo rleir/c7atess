@@ -21,6 +21,8 @@ use Catalyst qw/
     ConfigLoader
     Static::Simple
 /;
+#no, mail is sent by Scheduler
+#    Email 
 
 extends 'Catalyst';
 
