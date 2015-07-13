@@ -113,9 +113,11 @@ To Do:
 
   -Installation of the master needs to be automated, beyond what is done by installWorker.sh:
    There needs to be a directory /var/run/ocr which is writeable by the user running this cat app.
+
+  -The documetation for database installation needs to be improved in the Install file.
   
   -pluggable OCR engine and image preprocessing
-  -bundle the CPAN modules for automated installation
+  -bundle the CPAN modules for automated installation using Capistrano
 
   -One idea is to run a spelling checker across everything. It will correct some stuff, but 
    it will also make mistakes like changing a name to a word. So we can keep both
