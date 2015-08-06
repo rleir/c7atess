@@ -15,6 +15,7 @@ use HTML::FormatText;
 use HTML::TreeBuilder;
 use IO::HTML qw(html_file);
 use List::MoreUtils qw(uniq);
+#use Data::Dumper;
 
 use Encode qw(decode encode);
 
@@ -462,11 +463,13 @@ sub onePassFilter {
                     
                     my $innertext = $cur->textContent ;
                     # ignore blank words
-                    if ( $innertext eq "")   { $delNode=1; };           # print Dumper( "deleting 1"  );};
-                    if ( $innertext =~ /[\h\v]+/) { $delNode=1; };      # print Dumper( "deleting 4"  );};
-                
-                    # ignore words which are just punctuation
-                    if ( $innertext =~ /^[[:punct:]]$/) { $delNode=1;}; # print Dumper( "deleting 5"  );};
+                    if ( $innertext eq "") {
+                        $delNode=1;      # older regexes  /[\h\v]+/ /^[[:punct:]]$/
+
+                    } elsif ( $innertext =~ /^\s*\W*\w?\W*\s*$/) { 
+                        # ignore words which are blank, whitespace, or punctuation with one or zero 'word' chars
+                        $delNode=1;
+                    }
 
                     # print "nodeName is \n";
                     # print Dumper( $cur->nodeName);
