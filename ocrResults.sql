@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS `mydb`.`jobQueue` (
   `queuedBy` VARCHAR(25) NULL,
   `priority` SMALLINT NULL,
   `notify` VARCHAR(45) NULL,
-  `parm1` VARCHAR(45) NULL,
+  `parm1` VARCHAR(128) NULL,
   `Command` VARCHAR(45) NULL,
   `qDateTime` VARCHAR(45) NULL,
   `parm2` VARCHAR(45) NULL,
