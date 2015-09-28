@@ -30,6 +30,23 @@ my $password = $cfg->val( 'DBconn', 'password' ) ;
 my $hostname = $cfg->val( 'DBconn', 'hostname' ) ;
 my $dbname   = $cfg->val( 'DBconn', 'dbname' ) ;
 
+
+sub _connect {
+    my $dbh;
+    # try repeatedly until dns or mysql recovers
+    while ( 1) {
+        $dbh = DBI->connect( "DBI:mysql:database=$dbname;host=$hostname", $username, $password,
+                             {RaiseError => 0, PrintError => 0, mysql_enable_utf8 => 1}
+                           );
+        if( $dbh) {
+            return $dbh;
+        } else {
+            warn "Could not connect to database: $DBI::errstr" ;
+            sleep (100);
+        }
+    }
+}
+
 open($logFile, '>>', "/tmp/testtess.log")
     || croak "LOG open failed: $!";
 my $oldfh = select($logFile); $| = 1; select($oldfh);
@@ -61,10 +78,7 @@ ENDSTAT11
 # check for the existence of a tuple
 sub existsOCR {
     my ( $file, $engine, $lang) =  @_;
-    my $dbh = DBI->connect( "DBI:mysql:database=$dbname;host=$hostname", $username, $password,
-			    {RaiseError => 0, PrintError => 0, mysql_enable_utf8 => 1}
-	)
-	or croak "Could not connect to database: $DBI::errstr" ;
+    my $dbh = _connect();
     my $sth;
     if( !defined ($engine)) {
 	# any engine
@@ -111,12 +125,7 @@ ENDSTAT2
 sub insertOCR {
     my ( $input, $engine, $lang, $brightness, $contrast,
 	 $avgwconf, $nwords, $starttime, $time, $remarks, $orig_size, $intxt, $gzhocr) =  @_;
-
-    my $dbh = DBI->connect( "DBI:mysql:database=$dbname;host=$hostname", $username, $password,
-			    {RaiseError => 0, PrintError => 0, mysql_enable_utf8 => 1}
-	)
-	or croak "Could not connect to database: $DBI::errstr" ;
-
+    my $dbh = _connect();
     my $rows = $dbh->do( $SQLreplace, undef,
 			$input, $engine, $lang, $brightness, $contrast,
 			$avgwconf, $nwords, $starttime, $time, $remarks, $orig_size, $intxt, $gzhocr) ;
@@ -144,11 +153,7 @@ sub getOCR {
     } else {
         $SQLget =~ s/ZZengineSpecZZ// ;
     }
-
-    my $dbh = DBI->connect( "DBI:mysql:database=$dbname;host=$hostname", $username, $password,
-			    {RaiseError => 0, PrintError => 0, mysql_enable_utf8 => 1}
-	)
-	or croak "Could not connect to database: $DBI::errstr" ;
+    my $dbh = _connect();
 
     my $sth = $dbh->prepare($SQLget)         or croak $dbh->errstr;
     my $rv;
@@ -185,10 +190,7 @@ VALUES
 ENDSTAT5
 sub pushOCRjob {
     my ( $qb, $pri, $notif, $parm1, $cmd, $starttime, $parm2 ) =  @_;
-    my $dbh = DBI->connect( "DBI:mysql:database=$dbname;host=$hostname", $username, $password,
-			    {RaiseError => 0, PrintError => 0, mysql_enable_utf8 => 1}
-	)
-	or croak "Could not connect to database: $DBI::errstr" ;
+    my $dbh = _connect();
 
     my $sth = $dbh->prepare($SQLpushJob)         or croak $dbh->errstr;
     my $rv = $sth->execute( $qb, $pri, $notif, $parm1, $cmd, $starttime, $parm2) or croak $sth->errstr;
@@ -211,10 +213,7 @@ ENDSTAT4
 
 sub getOCRjob {
     my ( $ssx ) =  @_;
-    my $dbh = DBI->connect( "DBI:mysql:database=$dbname;host=$hostname", $username, $password,
-			    {RaiseError => 0, PrintError => 0, mysql_enable_utf8 => 1}
-	)
-	or croak "Could not connect to database: $DBI::errstr" ;
+    my $dbh = _connect();
 
     my $sth = $dbh->prepare($SQLgetJob)         or croak $dbh->errstr;
     my $rv = $sth->execute( )  or croak $sth->errstr;
@@ -237,10 +236,7 @@ ENDSTAT6
 
 sub doneOCRjob {
     my ( $id ) =  @_;
-    my $dbh = DBI->connect( "DBI:mysql:database=$dbname;host=$hostname", $username, $password,
-			    {RaiseError => 0, PrintError => 0, mysql_enable_utf8 => 1}
-	)
-	or croak "Could not connect to database: $DBI::errstr" ;
+    my $dbh = _connect();
 
     my $sth = $dbh->prepare($SQLdoneJob)         or croak $dbh->errstr;
     my $rv = $sth->execute( $id)  or croak $sth->errstr;
