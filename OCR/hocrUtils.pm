@@ -122,7 +122,7 @@ sub hocr2words {
 # inhocr is a string containing the hocr
 # imgFile is a web relative path to the image
 sub hocr2html {
-    my ( $unfilthocr, $fontSize ) =  @_;
+    my ( $unfilthocr, $fontSize, $file_ext ) =  @_;
 
     if( ! $fontSize) {
         $fontSize = 40;
@@ -145,7 +145,12 @@ sub hocr2html {
     my ($fullimgFile) = $titlevalue =~ /image \"(.*)\"; bbox ([0-9]*) ([0-9]*) ([0-9]*) ([0-9]*); ppageno ([0-9]*)/;
     # warn "fullimgFile $fullimgFile";
 
+    if( $file_ext && $fullimgFile =~ /(.*\.).*/ ) {
+        my $file_no_ext = $1;
+        $fullimgFile = $1 . $file_ext;
+    }
     my $p1 = $fullimgFile;
+
     $p1 =~ s/^\/tdr/\/collections.new\/pool1\/aip/ ;
     if( -e $p1) {
         #warn "exists p1 $p1";

@@ -43,7 +43,7 @@ if( $help ) {
     print "or    $0 --help\n";
     exit 0;
 }
-
+my $file_ext = 'jpg';
 my $inhocr;
 if( $imageFile eq "") {
 
@@ -62,9 +62,13 @@ if( $imageFile eq "") {
     my $status = gunzip \$gzhocr, \$rawhocr 
         or die "gunzip failed: $GunzipError\n";
     $inhocr = $rawhocr ;
+    if( $imageFile =~ /.*\.(.*)/ ) {
+        $file_ext = $1;
+        warn $1;
+    }
 }
 
-my $layerhtml = hocr2html ( $inhocr, $fontSize);
+my $layerhtml = hocr2html ( $inhocr, $fontSize, $file_ext);
 
 if( $outfile eq "") {
     print $layerhtml ;
