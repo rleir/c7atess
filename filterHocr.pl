@@ -11,8 +11,6 @@
 # http://www.canadiana.ca/schema/2012/xsd/txtmap/txtmap.xsd
 #
 use common::sense;
-use XML::LibXML;
-#use XML::LibXML::PrettyPrint;
 #use diagnostics;
 use OCR::hocrUtils qw( doFilterHocr);
 
