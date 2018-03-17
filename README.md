@@ -1,46 +1,38 @@
 ## Purpose:
-   Run Optical Character Recognition on millions of images,
-   using multiple machines and saving the results in a DB for analysis and other uses.
-   
-   This project is also useful for individual images because the image preprocessing gets
-   better results from Tesseract.
 
-   This project is also useful for CPU intensive tasks other than OCR that can be run in parallel on machines.
+*Run Optical Character Recognition on millions of images, using multiple machines and saving the results in a DB for analysis and other uses.*
+
+We had 25 million images, averaging 5Mbytes each, some of which contained text of varying legibility. We wanted to be able to search the images using the Solr search engine, so we needed the text in UTF-8. OCR using the excellent Tesseract took a few minutes per image, and we did not have years for the job. 
+
+If you have a small number of images, you may still be interested in  this project because the image preprocessing makes for  better OCR results from Tesseract.
+
+You may be interested in  this project just to see how  CPU intensive tasks other than OCR can be run in parallel on multiple machines.
 
 ## Interface
-   A RESTful interface accepts client jobs. A job is specified by the directory path, and all images in the 
-   tree are OCR'd. Currently, there is an email field for notification of results.  
-   There is also a CLI for accepting a job.
 
-   Jobs are queued for processing by the Scheduler.
+A very basic web UI can be used to queue client jobs. A job is specified by the directory path, and all images in the tree are OCR'd. Currently, there is an email field for notification of results.   The UI shows the job qeue. Maybe in the future we will be able to re-order or cancel jobs. 
 
-   A web UI shows the job qeue. Maybe we will be able to re-order or cancel jobs. 
+There is also a CLI for accepting a job.
 
-##Engine
-   The scheduler accepts a job from the queue, traverses the directory tree, and sends per-image tasks to
-   the workers so as to keep them optimally busy. Image format is JPG, JP2, and Tiff.  Each worker pre-processes
-   an image for adaptive thresholding,
-   runs Tesseract, filters junk from the output, then saves the results to the OCR DB.
-   The results include a .hocr file, raw text, and some statistics.
+## Engine
 
-   The preprocessing is done in Graphicsmagick. It converts color to a greyscale.  It makes a copy of the image,
-   applies blurring, then divides the two images pixel by pixel, giving a photocopy-like effect.
-   If the source image had uneven lighting then that is lost.  If the print density varied, then that is mostly lost.
-   After this preprocessing,  Tesseract can choose any threshold in a wide range; it is not critical.
+The scheduler accepts a job from the queue, traverses the directory tree, and sends per-image tasks to the workers so as to keep them optimally busy. Image format is JPG, JP2, and Tiff.  Each worker pre-processes an image for adaptive thresholding,  runs Tesseract, filters junk from the output, then saves the results to the OCR DB. The results include a .hocr file, raw text, and some statistics.
 
-   The filtering removes junk 'word's that are all punctuation, or blank.
+ The preprocessing is done in Graphicsmagick. It converts color to a greyscale.  It makes a copy of the image, applies blurring, then divides the two images pixel by pixel, giving a photocopy-like effect. If the source image had uneven lighting then that is lost.  If the print density varied, then that is mostly lost.  After this preprocessing,  Tesseract can choose any threshold in a wide range; it is not critical.
 
-   When all images are OCR'd, the job status is sent by email.
+ The filtering removes junk 'word's that are all punctuation, or blank.
 
-=====================================================
+ When all images have been OCR'd, the job status is sent by email.
+
 ##DB
-mysql> describe ocr ;
 
-Field             | Type         | Null | Key | Default | Extra          |
+    mysql> describe ocr ;
+
+|Field             | Type         | Null | Key | Default | Extra          |
 -------------------|--------------|------|-----|---------|---------------
- idocr             | int(11)      | NO   | PRI | NULL    | auto_increment |
- imageFile         | varchar(200) | NO   | MUL | NULL    |                |
- ocrEngine         | varchar(45)  | NO   |     | NULL    |                |
+| idocr             | int(11)      | NO   | PRI | NULL    | auto_increment |
+| imageFile         | varchar(200) | NO   | MUL | NULL    |                |
+| ocrEngine         | varchar(45)  | NO   |     | NULL    |                |
 | langParam         | varchar(8)   | NO   |     | NULL    |                |
 | brightness        | int(11)      | NO   |     | NULL    |                |
 | contrast          | int(11)      | NO   |     | NULL    |                |
@@ -60,12 +52,7 @@ Field             | Type         | Null | Key | Default | Extra          |
    Currently, this field is always 'tess3.03-IMdivide'.
 
 ###langParam
-   Tesseract supposedly will work better if it is told by parameter which language
-   it should expect, so it can make use of dictionaries. However, the results for
-   us are the same whether it is given 'eng' or 'fra'. Ideally we would like Tesseract
-   to tell us which language(s) it found, but we would do better to post-process
-   the results, and count hits against French and English dictionaries.
-   Currently, this field is always 'eng'.
+   Tesseract supposedly will work better if it is told by parameter which language it should expect, so it can make use of dictionaries. However, the results for  us are the same whether it is given 'eng' or 'fra'. Ideally we would like Tesseract  to tell us which language(s) it found, but we would do better to post-process the results, and count hits against French and English dictionaries.  Currently, this field is always 'eng'.
 
 ###brightness, contrast
    These fields are currently meaningless.
