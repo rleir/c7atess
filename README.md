@@ -102,8 +102,9 @@ tessdb.ini	| zz
 unique.pl	| creates a wordlist from the text for an image
 lib | web UI
 OCR/Ocrdb.pm | 	DB access utilities
-hocrUtils.pm | hOCR utilities
-
+OCR/hocrUtils.pm | hOCR utilities
+install/installWorker.sh | installation of the worker script, used on each machine
+install/pushWorker.sh	| zzz
 
 =====================================================
 
