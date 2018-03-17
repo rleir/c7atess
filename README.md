@@ -36,8 +36,8 @@ todo: correct this
 
 |Field             | Type         | Null | Key | Default | Extra          |
 -------------------|--------------|------|-----|---------|---------------
-  `idjobQueue` | INT | NO | PRI | AUTO_INCREMENT
-  `queuedBy` | VARCHAR(25) | YES |
+  `idjobQueue` | INT | NO | PRI | NULL | AUTO_INCREMENT
+  `queuedBy` | VARCHAR(25) | YES | | NULL
   `priority` | SMALLINT | YES | MUL | NULL
   `notify` | VARCHAR(45) | YES | | NULL
   `parm1` | VARCHAR(128) | YES | | NULL
