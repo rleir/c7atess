@@ -10,9 +10,11 @@ You may be interested in  this project just to see how  CPU intensive tasks othe
 
 ## Interface
 
-A very basic web UI can be used to queue client jobs. A job is specified by the directory path, and all images in the tree are OCR'd. Currently, there is an email field for notification of results.   The UI shows the job qeue. Maybe in the future we will be able to re-order or cancel jobs. 
+A CLI command is used to add client jobs to the queue.
 
-There is also a CLI for accepting a job.
+A very basic web UI shows the job qeue. It can also be used to add client jobs to the queue. Maybe in the future we will be able to re-order or cancel jobs. 
+
+A job is specified by the directory path, and all images in the tree are OCR'd. Currently, there is an email field for notification of results.  
 
 ## Engine
 
@@ -84,17 +86,17 @@ The size in bytes of the input image.
 
 =====================================================
 
-##Contributing: 
+## Contributing: 
 Pull requests are welcome.
    
-##Discussion:
+## Discussion:
 *   https://groups.google.com/forum/#!forum/tesseract-ocr
 * open an issue here
 
-##License: 
+## License: 
    Perl Artistic http://dev.perl.org/licenses/artistic.html
 
-##To Do
+## To Do
 *  -add your plans to this To Do list, or elaborate on it
 *  -the Scheduler should be launched using a service, in the scope of a ocr-data user account.  Or there could be a control on the Dashboard to launch and stop it.
 *  -Installation of the master needs to be automated, beyond what is done by installWorker.sh:  There needs to be a directory /var/run/ocr which is writeable by the user running this cat app.
@@ -108,7 +110,7 @@ Pull requests are welcome.
 *  -We talked of improvements in Adaptive thresholding. There is OpenCV, and the ImageMagick -lat feature
 * -In some Arabic community there is ongoing work to modify Tesseract to recognize connected characters because Arabic is generally connected. Their algorithm is called Cube or similar,    and runs much slower, with uncertain results. I mention this because we could possibly do something with our cursive images (though only the cleanest copperplate grade).
 
-##Contributors
+## Contributors
 
 * Rick Leir formerly richard.leir@canadiana.ca now rleir@leirtech.com
 * Russell
