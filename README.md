@@ -97,7 +97,8 @@ Pull requests are welcome.
    Perl Artistic http://dev.perl.org/licenses/artistic.html
 
 ## To Do
-*  -add your plans to this To Do list, or elaborate on it
+
+Here are some things we thought could be done better. Perhaps we should create an issue for each item below.
 *  -the Scheduler should be launched using a service, in the scope of a ocr-data user account.  Or there could be a control on the Dashboard to launch and stop it.
 *  -Installation of the master needs to be automated, beyond what is done by installWorker.sh:  There needs to be a directory /var/run/ocr which is writeable by the user running this cat app.
 *  -The documetation for database installation needs to be improved in the Install file.
@@ -112,7 +113,7 @@ Pull requests are welcome.
 
 ## Contributors
 
-* Rick Leir formerly richard.leir@canadiana.ca now rleir@leirtech.com
+* Rick Leir (formerly richard.leir@canadiana.ca , now) rleir@leirtech.com
 * Russell
 * Tim
 
