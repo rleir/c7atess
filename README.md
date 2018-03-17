@@ -16,15 +16,19 @@ There is also a CLI for accepting a job.
 
 ## Engine
 
-The scheduler accepts a job from the queue, traverses the directory tree, and sends per-image tasks to the workers so as to keep them optimally busy. Image format is JPG, JP2, and Tiff.  Each worker pre-processes an image for adaptive thresholding,  runs Tesseract, filters junk from the output, then saves the results to the OCR DB. The results include a .hocr file, raw text, and some statistics.
+The *scheduler* accepts a job from the queue, which specifies a directory. The *scheduler* traverses the directory tree, and for each image file, it sends a task to a *worker*. 
 
- The preprocessing is done in Graphicsmagick. It converts color to a greyscale.  It makes a copy of the image, applies blurring, then divides the two images pixel by pixel, giving a photocopy-like effect. If the source image had uneven lighting then that is lost.  If the print density varied, then that is mostly lost.  After this preprocessing,  Tesseract can choose any threshold in a wide range; it is not critical.
+The *workers* are distributed across several machines. Tesseract OCR is CPU intensive, and ties up a core: the core will run at 100% until finished. The optimal way to distribute tasks is to keep track of the number of tasks assigned to each machine, and assign more tasks so as to keep that number equal to the machine's core count. GNU parallel is used for assigning tasks, it is perfectly suited for this.
 
- The filtering removes junk 'word's that are all punctuation, or blank.
+The input image format can be JPG, JP2, or Tiff.  Each worker pre-processes an image for adaptive thresholding,  runs Tesseract, filters junk from the output, then saves the results to the OCR DB. The results include a .hocr file, raw text, and some statistics.
 
- When all images have been OCR'd, the job status is sent by email.
+The preprocessing is done in Graphicsmagick. It converts color to a greyscale.  It makes a duplicate copy of the image, applies blurring, then divides the two images pixel by pixel, giving a photocopy-like effect. Results: if the source image had uneven lighting then that is lost.  If the print density varied, then that is mostly lost.  After this preprocessing,  Tesseract can choose any threshold in a wide range; it is not critical.
 
-##DB
+When the input image is low quality, or includes graphics, the output from Tesseract typically contains many junk words that are all punctuation, or blank. We run the text through a word filter to remove the junk words.
+
+When all images in a job have been OCR'd, the *scheduler* sends the job status by email.
+
+## DB
 
     mysql> describe ocr ;
 
@@ -45,37 +49,37 @@ The scheduler accepts a job from the queue, traverses the directory tree, and se
 | outputText        | text         | YES  |     | NULL    |                |
 | outputHocr        | blob         | YES  |     | NULL    |                |
 
-###imageFile
+### imageFile
    Contains file paths in the form of path/to/image/dir/0223.jpg
 
-###ocrEngine
-   Currently, this field is always 'tess3.03-IMdivide'.
+### ocrEngine
+Currently, this field is always 'tess3.03-IMdivide'.
 
-###langParam
-   Tesseract supposedly will work better if it is told by parameter which language it should expect, so it can make use of dictionaries. However, the results for  us are the same whether it is given 'eng' or 'fra'. Ideally we would like Tesseract  to tell us which language(s) it found, but we would do better to post-process the results, and count hits against French and English dictionaries.  Currently, this field is always 'eng'.
+### langParam
+Tesseract supposedly will work better if it is told by parameter which language it should expect, so it can make use of dictionaries. However, the results for  us are the same whether it is given 'eng' or 'fra'. Ideally we would like Tesseract  to tell us which language(s) it found, but we would do better to post-process the results, and count hits against French and English dictionaries.  Currently, this field is always 'eng'.
 
-###brightness, contrast
-   These fields are currently meaningless.
+### brightness, contrast
+These fields are currently meaningless.
 
-###avgWordConfidence
-   This field records the average X_xconf value from the .hocr file.
+### avgWordConfidence
+This field records the average X_xconf value from the .hocr file.
 
-###numWords
-   This field records the number of words from the .hocr file
+### numWords
+This field records the number of words from the .hocr file
 
-###startOcr, time Ocr
-   The start time and elapsed time.
+### startOcr, time Ocr
+The start time and elapsed time.
 
-###remarks
-   This field is unused.
+### remarks
+This field is unused.
 
-###imageFileSize
-   The size in bytes of the input image.
+### imageFileSize
+The size in bytes of the input image.
 
-###outputText
+### outputText
    The resulting text from Tesseract, in UTF8
 
-###outputHocr
+### outputHocr
    The resulting hOCR from Tesseract, compressed by gzip.
 
 =====================================================
