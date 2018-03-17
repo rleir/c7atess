@@ -30,6 +30,21 @@ When the input image is low quality, or includes graphics, the output from Tesse
 
 When all images in a job have been OCR'd, the *scheduler* sends the job status by email.
 
+## DB for OCR job queue
+
+todo: correct this
+
+|Field             | Type         | Null | Key | Default | Extra          |
+-------------------|--------------|------|-----|---------|---------------
+  `idjobQueue` | INT | NO | PRI | AUTO_INCREMENT
+  `queuedBy` | VARCHAR(25) | YES |
+  `priority` | SMALLINT | YES | MUL | NULL
+  `notify` | VARCHAR(45) | YES | | NULL
+  `parm1` | VARCHAR(128) | YES | | NULL
+  `Command` | VARCHAR(45) | YES | | NULL
+  `qDateTime` | VARCHAR(45) | YES | MUL | NULL
+  `parm2` | VARCHAR(45) | YES | | NULL,
+  
 ## DB for OCR output
 
     mysql> describe ocr ;
@@ -86,15 +101,16 @@ The size in bytes of the input image.
 
 =====================================================
 
+### Server Scripts
+
 script | remarks
 --------|--------
-DoImage.pl	| the worker program, installed on all machines
-DoJob.pl	| the scheduler program, installed on one machine
-Install	| installs the worker
-c7aget.pl | zz
+DoImage.pl	| the worker program, installed on all machines: preprocess then OCR one image
+DoJob.pl	| the scheduler program, installed on one machine: for each job, OCR all images in a directory
+c7aget.pl | CLI : Given a image file specifier get the hocr from the ocr DB
 filterAllDB.pl	| filter all fields in the DB
 filterHocr.pl	| filters junk words from Tesseract output
-findWork.pl	| the scheduler program, installed on one machine
+findWork.pl	| CLI: scan a directory tree, looking for a directory which has not yet been OCR'd
 hocr2html.pl | creates an html page for each image, suitable for superimposing highlighting on the image
 hocr2txtmap.pl	| creates a TxtMap file
 ocrResults.sql	| DB creation
