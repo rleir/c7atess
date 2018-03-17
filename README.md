@@ -100,11 +100,28 @@ hocr2txtmap.pl	| creates a TxtMap file
 ocrResults.sql	| DB creation
 tessdb.ini	| zz
 unique.pl	| creates a wordlist from the text for an image
-lib | web UI
 OCR/Ocrdb.pm | 	DB access utilities
 OCR/hocrUtils.pm | hOCR utilities
 install/installWorker.sh | installation of the worker script, used on each machine
 install/pushWorker.sh	| zzz
+
+### Perl Dancer UI
+script | remarks
+-------|-------
+lib/OCR/Controller/Root.pm	| default controller
+lib/OCR/Controller/log.pm	| show DoImage.log
+lib/OCR/Controller/pause.pm	| pause a job
+lib/OCR/Controller/start.pm	| call DoImage.pl to start a job
+lib/OCR/Controller/status.pm	| get status of all jobs - list all running DoJob.pl
+lib/OCR/Controller/stop.pm	| stop a job
+lib/OCR/Ocr.pm | UI configuration
+root/scripts/jquery-serialization.js | DOM?
+root/scripts/tasks-controller.js | AJAX to the controller
+root/static/images/*.png | buttons
+root/styles/tasks.css | CSS
+root/tasks.html | UI main page
+
+
 
 =====================================================
 
