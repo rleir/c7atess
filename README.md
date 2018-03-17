@@ -33,17 +33,18 @@ When all images in a job have been OCR'd, the *scheduler* sends the job status b
 ## DB for OCR job queue
 
 todo: correct this
+    mysql> describe jobQueue;
 
 |Field             | Type         | Null | Key | Default | Extra          |
 -------------------|--------------|------|-----|---------|---------------
-  `idjobQueue` | INT | NO | PRI | NULL | AUTO_INCREMENT
-  `queuedBy` | VARCHAR(25) | YES | | NULL
-  `priority` | SMALLINT | YES | MUL | NULL
-  `notify` | VARCHAR(45) | YES | | NULL
-  `parm1` | VARCHAR(128) | YES | | NULL
-  `Command` | VARCHAR(45) | YES | | NULL
-  `qDateTime` | VARCHAR(45) | YES | MUL | NULL
-  `parm2` | VARCHAR(45) | YES | | NULL,
+  idjobQueue | INT | NO | PRI | NULL | AUTO_INCREMENT
+  queuedBy | VARCHAR(25) | YES | | NULL
+  priority | SMALLINT | YES | MUL | NULL
+  notify | VARCHAR(45) | YES | | NULL
+  parm1 | VARCHAR(128) | YES | | NULL
+  Command | VARCHAR(45) | YES | | NULL
+  qDateTime | VARCHAR(45) | YES | MUL | NULL
+  parm2 | VARCHAR(45) | YES | | NULL,
   
 ## DB for OCR output
 
