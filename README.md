@@ -30,7 +30,7 @@ When the input image is low quality, or includes graphics, the output from Tesse
 
 When all images in a job have been OCR'd, the *scheduler* sends the job status by email.
 
-## DB
+## DB for OCR output
 
     mysql> describe ocr ;
 
@@ -83,6 +83,25 @@ The size in bytes of the input image.
 
 ### outputHocr
    The resulting hOCR from Tesseract, compressed by gzip.
+
+=====================================================
+
+script | remarks
+--------|--------
+DoImage.pl	| the worker program, installed on all machines
+DoJob.pl	| the scheduler program, installed on one machine
+Install	| installs the worker
+c7aget.pl | zz
+filterAllDB.pl	| filter all fields in the DB
+filterHocr.pl	| filters junk words from Tesseract output
+findWork.pl	| the scheduler program, installed on one machine
+hocr2html.pl | creates an html page for each image, suitable for superimposing highlighting on the image
+hocr2txtmap.pl	| creates a TxtMap file
+ocrResults.sql	| DB creation
+tessdb.ini	| zz
+unique.pl	| creates a wordlist from the text for an image
+lib | web UI
+
 
 =====================================================
 
