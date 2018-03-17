@@ -107,20 +107,20 @@ The size in bytes of the input image.
 script | remarks
 --------|--------
 DoImage.pl	| the worker program, installed on all machines: preprocess then OCR one image
-DoJob.pl	| the scheduler program, installed on one machine: for each job, OCR all images in a directory
+DoJob.pl	| CLI: the scheduler program, installed on one machine: for each job, OCR all images in a directory (also starts the UI)
 c7aget.pl | CLI : Given a image file specifier get the hocr from the ocr DB
-filterAllDB.pl	| filter all fields in the DB
+filterAllDB.pl	| CLI: filter all fields in the DB
 filterHocr.pl	| filters junk words from Tesseract output
 findWork.pl	| CLI: scan a directory tree, looking for a directory which has not yet been OCR'd
-hocr2html.pl | creates an html page for each image, suitable for superimposing highlighting on the image
-hocr2txtmap.pl	| creates a TxtMap file
+hocr2html.pl | CLI: creates an html page for each image, suitable for superimposing highlighting on the image
+hocr2txtmap.pl	| CLI: creates a TxtMap file http://www.canadiana.ca/schema/2012/xsd/txtmap/txtmap.xsd
 ocrResults.sql	| DB creation
-tessdb.ini	| zz
+tessdb.ini	| conf used by Perl to access the DB
 unique.pl	| creates a wordlist from the text for an image
 OCR/Ocrdb.pm | 	DB access utilities
 OCR/hocrUtils.pm | hOCR utilities
 install/installWorker.sh | installation of the worker script, used on each machine
-install/pushWorker.sh	| zzz
+install/pushWorker.sh	| copy scripts to a machine where workers will run
 
 ### Perl Dancer UI
 script | remarks
