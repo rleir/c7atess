@@ -166,6 +166,7 @@ Here are some things we thought could be done better. Perhaps we should create a
 *  -We talked of multi-column, like newspapers. OCR should follow the column. In the pathological case, OCR spans across the page, getting the column text interleaved.    We could solve this by using Ocropus to find bounding boxes, then Tesseract to do the actual work.
 *  -We talked of improvements in Adaptive thresholding. There is OpenCV, and the ImageMagick -lat feature
 * -In some Arabic community there is ongoing work to modify Tesseract to recognize connected characters because Arabic is generally connected. Their algorithm is called Cube or similar,    and runs much slower, with uncertain results. I mention this because we could possibly do something with our cursive images (though only the cleanest copperplate grade).
+* -Have a look at the Leptonica project for image processing.
 
 ## Contributors
 
